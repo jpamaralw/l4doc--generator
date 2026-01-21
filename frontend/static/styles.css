@@ -14,8 +14,7 @@
 }
 
 body {
-  font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI",
-    sans-serif;
+  font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
   color: var(--l4-text);
   min-height: 100vh;
 }
@@ -32,7 +31,7 @@ body {
   content: "";
   position: absolute;
   inset: 0;
-  background: url("static/bg-map.gif") center/cover no-repeat;
+  background: url("bg-map.gif") center/cover no-repeat;
   opacity: 0.4;
   mix-blend-mode: screen;
 }
@@ -280,6 +279,14 @@ body {
   }
 
   .container {
-    margin: 20px auto 32px;
+    margin-top: 20px;
+  }
+
+  .form-container {
+    padding: 20px 16px 22px;
+  }
+
+  .button-group {
+    justify-content: center;
   }
 }
