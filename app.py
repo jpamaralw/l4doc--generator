@@ -252,7 +252,7 @@ def gerar_procuracao(payload: ProcuracaoPayload):
 @app.post("/gerar/ciencia")
 def gerar_ciencia(payload: CienciaPayload):
     try:
-        template_path = "templates/template-dec-ciencia&concord.docx"
+        template_path = "templates/template-dec-ciencia-concord.docx"
         doc = DocxTemplate(template_path)
         
         context = {
