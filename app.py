@@ -5,7 +5,10 @@ from pydantic import BaseModel
 from docxtpl import DocxTemplate
 import os
 import uuid
-from typing import Optional
+from typing import Optional, List
+from sqlmodel import SQLModel, Field, create_engine, Session, select
+from datetime import datetime
+import json
 
 app = FastAPI(title="L4 Ativos - API de Documentos")
 
@@ -19,6 +22,53 @@ app.add_middleware(
 )
 
 os.makedirs("output", exist_ok=True)
+
+# ==== DATABASE CONFIG ==== #
+DATABASE_URL = os.getenv("DATABASE_URL", "sqlite:///./l4docs.db")
+engine = create_engine(DATABASE_URL, echo=False)
+
+class Documento(SQLModel, table=True):
+    id: int | None = Field(default=None, primary_key=True)
+    tipo: str
+    nome_principal: str
+    payload_json: str
+    arquivo_path: str
+    criado_em: datetime = Field(default_factory=datetime.utcnow)
+
+class DocumentoOut(BaseModel):
+    id: int
+    tipo: str
+    nome_principal: str
+    criado_em: datetime
+
+    class Config:
+        orm_mode = True
+
+def create_db_and_tables():
+    SQLModel.metadata.create_all(engine)
+
+@app.on_event("startup")
+def on_startup():
+    create_db_and_tables()
+
+def save_document(tipo: str, nome_principal: str, payload_dict: dict, arquivo_path: str):
+    with Session(engine) as session:
+        doc = Documento(
+            tipo=tipo,
+            nome_principal=nome_principal,
+            payload_json=json.dumps(payload_dict, ensure_ascii=False),
+            arquivo_path=arquivo_path,
+        )
+        session.add(doc)
+        session.commit()
+
+def format_currency(value):
+    """Formata valor numérico para R$ com separadores corretos"""
+    try:
+        val = float(value)
+        return f"R$ {val:,.2f}".replace(',', 'X').replace('.', ',').replace('X', '.')
+    except:
+        return str(value)
 
 # ==== MODELOS DE ENTRADA ==== #
 
@@ -102,6 +152,19 @@ class DeclaracaoPayload(BaseModel):
 def root():
     return {"message": "L4 Ativos - API de Geração de Documentos"}
 
+@app.get("/documentos", response_model=List[DocumentoOut])
+def listar_documentos(limit: int = 50, offset: int = 0):
+    """Lista todos os documentos gerados"""
+    with Session(engine) as session:
+        docs = (
+            session.query(Documento)
+            .order_by(Documento.criado_em.desc())
+            .offset(offset)
+            .limit(limit)
+            .all()
+        )
+        return docs
+
 @app.post("/gerar/contrato")
 def gerar_contrato(payload: ContratoPayload):
     try:
@@ -121,14 +184,21 @@ def gerar_contrato(payload: ContratoPayload):
             "uf_cedente": payload.cedente_uf,
             "numero_processo": payload.processo_numero,
             "devedor": payload.processo_devedor,
-            "valor_bruto": f"R$ {payload.processo_valor_bruto:,.2f}".replace(',', 'X').replace('.', ',').replace('X', '.'),
-            "valor_liquido": f"R$ {payload.processo_valor_liquido:,.2f}".replace(',', 'X').replace('.', ',').replace('X', '.'),
+            "valor_bruto": format_currency(payload.processo_valor_bruto),
+            "valor_liquido": format_currency(payload.processo_valor_liquido),
         }
         
         doc.render(context)
         
         output_filename = f"output/contrato_{uuid.uuid4().hex[:8]}.docx"
         doc.save(output_filename)
+        
+        save_document(
+            tipo="contrato",
+            nome_principal=payload.cedente_nome,
+            payload_dict=payload.dict(),
+            arquivo_path=output_filename,
+        )
         
         return FileResponse(
             output_filename,
@@ -164,6 +234,13 @@ def gerar_procuracao(payload: ProcuracaoPayload):
         output_filename = f"output/procuracao_{uuid.uuid4().hex[:8]}.docx"
         doc.save(output_filename)
         
+        save_document(
+            tipo="procuracao",
+            nome_principal=payload.outorgante_nome,
+            payload_dict=payload.dict(),
+            arquivo_path=output_filename,
+        )
+        
         return FileResponse(
             output_filename,
             media_type="application/vnd.openxmlformats-officedocument.wordprocessingml.document",
@@ -195,8 +272,8 @@ def gerar_ciencia(payload: CienciaPayload):
             "Endereco_Cessionario": payload.cessionario2_endereco,
             "CEP_Cessionario": payload.cessionario2_cep,
             "Numero": payload.proc2_numero,
-            "Valor_Bruto": f"R$ {payload.proc2_valor_bruto:,.2f}".replace(',', 'X').replace('.', ',').replace('X', '.'),
-            "Valor_Liquido": f"R$ {payload.proc2_valor_liquido:,.2f}".replace(',', 'X').replace('.', ',').replace('X', '.'),
+            "Valor_Bruto": format_currency(payload.proc2_valor_bruto),
+            "Valor_Liquido": format_currency(payload.proc2_valor_liquido),
             "Nome Advogado": payload.proc2_advogado,
             "Agencia": payload.proc2_agencia,
             "Conta": payload.proc2_conta,
@@ -208,6 +285,13 @@ def gerar_ciencia(payload: CienciaPayload):
         
         output_filename = f"output/ciencia_{uuid.uuid4().hex[:8]}.docx"
         doc.save(output_filename)
+        
+        save_document(
+            tipo="ciencia",
+            nome_principal=payload.cedente2_nome,
+            payload_dict=payload.dict(),
+            arquivo_path=output_filename,
+        )
         
         return FileResponse(
             output_filename,
@@ -247,6 +331,13 @@ def gerar_declaracao(payload: DeclaracaoPayload):
         
         output_filename = f"output/declaracao_{uuid.uuid4().hex[:8]}.docx"
         doc.save(output_filename)
+        
+        save_document(
+            tipo="declaracao_quitacao",
+            nome_principal=payload.decl_nome,
+            payload_dict=payload.dict(),
+            arquivo_path=output_filename,
+        )
         
         return FileResponse(
             output_filename,

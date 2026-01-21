@@ -38,7 +38,7 @@
       content: "";
       position: absolute;
       inset: 0;
-      background: url("../static/bg-map.gif") center/cover no-repeat;
+      background: url("static/bg-map.gif") center/cover no-repeat;
       opacity: 0.4;
       mix-blend-mode: screen;
     }
@@ -304,7 +304,7 @@
 
   <div class="overlay">
     <div class="header">
-      <img src="../static/logo-l4.png" alt="L4 Ativos" class="logo" />
+      <img src="static/logo-l4.png" alt="L4 Ativos" class="logo" />
       <div class="header-text">
         <h1>Gerador de Documentos Jurídicos</h1>
         <p>Automação de contratos e declarações – L4 Ativos</p>
@@ -722,7 +722,7 @@
   </div>
 
     <script>
-        const API_URL = 'http://localhost:8000'; // Trocar para URL de produção depois
+        const API_URL = `http://${window.location.hostname}:8000`;
 
         function switchTab(tabName) {
             const forms = document.querySelectorAll('.form-container');
