@@ -1,5 +1,6 @@
 from fastapi import FastAPI, HTTPException
 from fastapi.responses import FileResponse
+from fastapi.staticfiles import StaticFiles
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
 from docxtpl import DocxTemplate
@@ -148,9 +149,11 @@ class DeclaracaoPayload(BaseModel):
 
 # ==== ENDPOINTS ==== #
 
+app.mount("/static", StaticFiles(directory="frontend/static"), name="static")
+
 @app.get("/")
 def root():
-    return {"message": "L4 Ativos - API de Geração de Documentos"}
+    return FileResponse("frontend/index.html")
 
 @app.get("/documentos", response_model=List[DocumentoOut])
 def listar_documentos(limit: int = 50, offset: int = 0):

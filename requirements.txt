@@ -5,3 +5,11 @@ docxtpl==0.16.7
 python-docx==1.1.0
 sqlmodel
 psycopg2-binary
+docxtpl==0.16.7
+fastapi==0.109.0
+psycopg2-binary
+pydantic
+python-docx==1.1.0
+python-multipart==0.0.6
+sqlmodel
+uvicorn[standard]==0.27.0

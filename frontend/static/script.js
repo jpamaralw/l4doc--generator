@@ -1,12 +1,6 @@
-const isLocal =
-  window.location.hostname === "localhost" ||
-  window.location.hostname === "127.0.0.1";
+const API_URL = "";
 
-const API_URL = isLocal
-  ? "http://127.0.0.1:8000"
-  : "https://l4doc-api.onrender.com";
-
-console.log(`🔗 Conectando à API: ${API_URL}`);
+console.log(`🔗 Conectando à API: ${window.location.origin}`);
 
 function switchTab(tabName) {
     const forms = document.querySelectorAll('.form-container');
