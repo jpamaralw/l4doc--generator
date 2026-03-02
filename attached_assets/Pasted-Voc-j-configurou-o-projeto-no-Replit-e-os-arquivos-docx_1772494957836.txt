@@ -1,0 +1,36 @@
+Você já configurou o projeto no Replit e os arquivos .docx de template estão na pasta templates/.
+
+AGORA MUDE O PRODUTO/FLUXO (sem quebrar o que já funciona):
+Objetivo: Uma única página com TODOS os campos. Ao clicar em "Gerar Documentos", o backend gera AUTOMATICAMENTE os 4 .docx (usando os 4 templates existentes) e devolve 1 arquivo .zip para download.
+
+Regras essenciais:
+1) NÃO pode ter seleção de tipo de documento/contrato. É um formulário único.
+2) Tem que sair com a mesma formatação dos templates (não recriar layout).
+3) As tags existentes nos templates são do tipo {{tag}} e devem ser preenchidas via contexto do docxtpl (python-docx-template).
+   Use o padrão: DocxTemplate(path) -> render(context) -> save(...) [web:42][web:55]
+4) Se faltar algum campo necessário para qualquer template, retorne erro 400 com lista de chaves faltantes por template.
+5) Endpoint novo: POST /api/generate-all
+   - Recebe JSON único com todos os campos
+   - Gera 4 arquivos .docx (um por template)
+   - Compacta em ZIP em memória (BytesIO)
+   - Retorna StreamingResponse com Content-Disposition attachment; filename="Documentos_[Nome]_[Data].zip" [web:53]
+
+Tarefas:
+A) Backend (FastAPI):
+- Implementar /api/generate-all.
+- Para evitar “vazamento” entre renders, instancie DocxTemplate separadamente para cada template.
+- Salvar temporariamente em output/ ou gerar tudo em memória; no final retornar ZIP.
+- Mapear as chaves do JSON para as tags dos templates (ex.: {{nome_cedente}}, {{cpf_cedente}}, {{numero_processo}}...) [file:13][file:11][file:12][file:14]
+
+B) Frontend:
+- Remover/ignorar qualquer UI de abas/botões por documento.
+- Criar UMA página com seções (accordion ok) para os dados.
+- No submit, chamar POST /api/generate-all e disparar download do ZIP.
+
+C) Teste:
+- Criar um payload de exemplo (JSON) que preencha pelo menos os campos mais usados.
+- Confirmar que os 4 DOCX baixados não contêm nenhuma tag {{...}} remanescente.
+
+Entregue:
+- Código funcionando no preview do Replit.
+- README com: como rodar, como testar, exemplo de payload.

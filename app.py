@@ -1,11 +1,13 @@
-from fastapi import FastAPI, HTTPException
-from fastapi.responses import FileResponse
+from fastapi import FastAPI, HTTPException, Request
+from fastapi.responses import FileResponse, StreamingResponse
 from fastapi.staticfiles import StaticFiles
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
 from docxtpl import DocxTemplate
 import os
 import uuid
+import io
+import zipfile
 from typing import Optional, List
 from sqlmodel import SQLModel, Field, create_engine, Session, select
 from datetime import datetime
@@ -147,7 +149,185 @@ class DeclaracaoPayload(BaseModel):
     decl_local: str
     decl_data: str
 
+class AllDocumentsPayload(BaseModel):
+    # Cedente / Outorgante / Declarante (Geralmente a mesma pessoa)
+    nome: str
+    cpf: str
+    rg: str
+    nacionalidade: str = "brasileiro(a)"
+    profissao: str
+    estado_civil: str
+    endereco: str
+    cep: str
+    data_nasc: str
+    
+    # Processo / Negociação
+    processo_numero: str
+    processo_devedor: str = "ESTADO DE GOIÁS"
+    processo_valor_bruto: float
+    processo_valor_liquido: float
+    processo_local: str = "Brasília-DF"
+    processo_data: str  # Ex: 09 de Dezembro de 2025
+    
+    # Ciência (Cessionário)
+    cessionario_nome: str
+    cessionario_cpf: str
+    cessionario_rg: str
+    cessionario_profissao: str
+    cessionario_endereco: str
+    cessionario_cep: str
+    
+    # Dados Bancários / Outros
+    advogado_patrono: str
+    banco: str = "Banco do Brasil"
+    agencia: str
+    conta: str
+    
+    # Declaração Quitação
+    data_negociacao: str
+    estado_devedor: str = "ESTADO DE GOIÁS"
+    unidade_judicial: str = "Unidade de Processamento Judicial dos Juizados Especiais da Fazenda Pública"
+    comarca: str = "Goiânia"
+    processo_origem: str
+
 # ==== ENDPOINTS ==== #
+
+@app.post("/api/generate-all")
+async def generate_all(payload: AllDocumentsPayload):
+    try:
+        nome_limpo = payload.nome.replace(" ", "_")
+        data_hoje = datetime.now().strftime("%Y%m%d")
+        zip_filename = f"Documentos_{nome_limpo}_{data_hoje}.zip"
+        
+        # Buffer para o ZIP
+        zip_buffer = io.BytesIO()
+        
+        with zipfile.ZipFile(zip_buffer, "a", zipfile.ZIP_DEFLATED, False) as zip_file:
+            # 1. Contrato
+            template_contrato = "templates/template-cessao-rpv.docx"
+            doc_contrato = DocxTemplate(template_contrato)
+            ctx_contrato = {
+                "nome_cedente": payload.nome,
+                "cpf_cedente": payload.cpf,
+                "rg_cedente": payload.rg,
+                "nacionalidade_cedente": payload.nacionalidade,
+                "profissao_cedente": payload.profissao,
+                "estado_civil_cedente": payload.estado_civil,
+                "endereco_cedente": payload.endereco,
+                "cep_cedente": payload.cep,
+                "cidade_cedente": payload.comarca,
+                "uf_cedente": "GO", # Default
+                "numero_processo": payload.processo_numero,
+                "devedor": payload.processo_devedor,
+                "valor_bruto": format_currency(payload.processo_valor_bruto),
+                "valor_liquido": format_currency(payload.processo_valor_liquido),
+            }
+            doc_contrato.render(ctx_contrato)
+            buf_contrato = io.BytesIO()
+            doc_contrato.save(buf_contrato)
+            zip_file.writestr(f"1_Contrato_Cessao_{nome_limpo}.docx", buf_contrato.getvalue())
+
+            # 2. Procuração
+            template_proc = "templates/template-procuracao-adjudicia.docx"
+            doc_proc = DocxTemplate(template_proc)
+            ctx_proc = {
+                "Nome": payload.nome,
+                "Nacionalidade": payload.nacionalidade,
+                "Estado Civil": payload.estado_civil,
+                "Profissao": payload.profissao,
+                "RG": payload.rg,
+                "CPF": payload.cpf,
+                "Data Nasc": payload.data_nasc,
+                "Endereco": payload.endereco,
+                "CEP": payload.cep,
+                "Numero Processo": payload.processo_numero,
+                "Local": payload.processo_local,
+                "Data": payload.processo_data,
+            }
+            doc_proc.render(ctx_proc)
+            buf_proc = io.BytesIO()
+            doc_proc.save(buf_proc)
+            zip_file.writestr(f"2_Procuracao_{nome_limpo}.docx", buf_proc.getvalue())
+
+            # 3. Ciência
+            template_ciencia = "templates/template-dec-ciencia-concord.docx"
+            doc_ciencia = DocxTemplate(template_ciencia)
+            ctx_ciencia = {
+                "Nome": payload.nome,
+                "nacionalidade": payload.nacionalidade,
+                "Profissao": payload.profissao,
+                "Estado Civil": payload.estado_civil,
+                "RG": payload.rg,
+                "CPF": payload.cpf,
+                "Data": payload.data_nasc,
+                "Endereco": payload.endereco,
+                "CEP": payload.cep,
+                "Nome_Cessionario": payload.cessionario_nome,
+                "Profissao_Cessionario": payload.cessionario_profissao,
+                "CPF_Cessionario": payload.cessionario_cpf,
+                "RG_Cessionario": payload.cessionario_rg,
+                "Endereco_Cessionario": payload.cessionario_endereco,
+                "CEP_Cessionario": payload.cessionario_cep,
+                "Numero": payload.processo_numero,
+                "Valor_Bruto": format_currency(payload.processo_valor_bruto),
+                "Valor_Liquido": format_currency(payload.processo_valor_liquido),
+                "Nome Advogado": payload.advogado_patrono,
+                "Agencia": payload.agencia,
+                "Conta": payload.conta,
+                "Banco": payload.banco,
+                "Data_Final": payload.processo_data,
+            }
+            doc_ciencia.render(ctx_ciencia)
+            buf_ciencia = io.BytesIO()
+            doc_ciencia.save(buf_ciencia)
+            zip_file.writestr(f"3_Declaracao_Ciencia_{nome_limpo}.docx", buf_ciencia.getvalue())
+
+            # 4. Quitação
+            template_quit = "templates/template-dec-quitacao.docx"
+            doc_quit = DocxTemplate(template_quit)
+            ctx_quit = {
+                "Nome": payload.nome,
+                "Nacionalidade": payload.nacionalidade,
+                "Estado Civil": payload.estado_civil,
+                "Profissao": payload.profissao,
+                "RG": payload.rg,
+                "CPF": payload.cpf,
+                "Data": payload.data_nasc,
+                "Endereco": payload.endereco,
+                "CEP": payload.cep,
+                "DD/MM/AAAA": payload.data_negociacao,
+                "Numero Processo": payload.processo_numero,
+                "Estado": payload.estado_devedor,
+                "Vara/Unidade": payload.unidade_judicial,
+                "Comarca": payload.comarca,
+                "Numero Processo Origem": payload.processo_origem,
+                "Local": payload.processo_local,
+                "Data_Final": payload.processo_data,
+            }
+            doc_quit.render(ctx_quit)
+            buf_quit = io.BytesIO()
+            doc_quit.save(buf_quit)
+            zip_file.writestr(f"4_Declaracao_Quitacao_{nome_limpo}.docx", buf_quit.getvalue())
+
+        zip_buffer.seek(0)
+        
+        # Salvar no banco (opcional, mas mantendo o padrão)
+        save_document(
+            tipo="geracao_completa_zip",
+            nome_principal=payload.nome,
+            payload_dict=payload.dict(),
+            arquivo_path=f"memory://{zip_filename}",
+        )
+
+        return StreamingResponse(
+            zip_buffer,
+            media_type="application/x-zip-compressed",
+            headers={"Content-Disposition": f"attachment; filename={zip_filename}"}
+        )
+    except Exception as e:
+        import traceback
+        print(traceback.format_exc())
+        raise HTTPException(status_code=500, detail=str(e))
 
 app.mount("/static", StaticFiles(directory="frontend/static"), name="static")
 

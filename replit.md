@@ -38,11 +38,44 @@ Workflow: `uvicorn app:app --host 0.0.0.0 --port 5000 --reload`
 
 - `GET /` — Serves the frontend HTML
 - `GET /static/*` — Serves static assets
+- `POST /api/generate-all` — Generate all 4 documents in a single ZIP
 - `GET /documentos` — List all generated documents
-- `POST /gerar/contrato` — Generate cessão RPV contract
-- `POST /gerar/procuracao` — Generate power of attorney
-- `POST /gerar/ciencia` — Generate ciência e concordância declaration
-- `POST /gerar/declaracao` — Generate quitação declaration
+
+### Payload Example for `/api/generate-all`:
+```json
+{
+  "nome": "João da Silva",
+  "cpf": "123.456.789-00",
+  "rg": "1234567-SSP/GO",
+  "nacionalidade": "brasileiro(a)",
+  "profissao": "Engenheiro",
+  "estado_civil": "Casado(a)",
+  "endereco": "Rua das Flores, 123",
+  "cep": "74000-000",
+  "data_nasc": "01/01/1980",
+  "processo_numero": "0000000-00.2024.8.09.0001",
+  "processo_devedor": "ESTADO DE GOIÁS",
+  "processo_valor_bruto": 15000.00,
+  "processo_valor_liquido": 12000.00,
+  "processo_local": "Goiânia-GO",
+  "processo_data": "02 de Março de 2026",
+  "cessionario_nome": "L4 ATIVOS FINANCEIROS",
+  "cessionario_cpf": "00.000.000/0001-00",
+  "cessionario_rg": "Isento",
+  "cessionario_profissao": "Empresa",
+  "cessionario_endereco": "Av. Principal, 100",
+  "cessionario_cep": "74000-001",
+  "advogado_patrono": "Dr. Fulano de Tal",
+  "banco": "Banco do Brasil",
+  "agencia": "1234",
+  "conta": "56789-0",
+  "data_negociacao": "02/03/2026",
+  "estado_devedor": "ESTADO DE GOIÁS",
+  "unidade_judicial": "1ª Vara da Fazenda Pública",
+  "comarca": "Goiânia",
+  "processo_origem": "1234567-89.2023.8.09.0001"
+}
+```
 
 ## Key Notes
 

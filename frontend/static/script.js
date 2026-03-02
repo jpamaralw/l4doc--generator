@@ -13,28 +13,25 @@ function switchTab(tabName) {
     event.target.classList.add('active');
 }
 
-async function gerarDocumento(tipo) {
-    const forms = {
-        'contrato': 'contratoForm',
-        'procuracao': 'procuracaoForm',
-        'ciencia': 'cienciaForm',
-        'declaracao': 'declaracaoForm'
-    };
-
-    const form = document.getElementById(forms[tipo]);
+async function generateAll() {
+    const form = document.getElementById('generateAllForm');
     const formData = new FormData(form);
     const dados = Object.fromEntries(formData);
 
+    // Converter valores numéricos
+    dados.processo_valor_bruto = parseFloat(dados.processo_valor_bruto);
+    dados.processo_valor_liquido = parseFloat(dados.processo_valor_liquido);
+
     if (!form.checkValidity()) {
-        mostrarMensagem(tipo, 'Preencha todos os campos obrigatórios!', 'error');
+        mostrarMensagem('generate', 'Preencha todos os campos obrigatórios!', 'error');
         form.reportValidity();
         return;
     }
 
-    mostrarMensagem(tipo, '⏳ Gerando documento...', 'success');
+    mostrarMensagem('generate', '⏳ Gerando pacote de documentos...', 'success');
 
     try {
-        const response = await fetch(`${API_URL}/gerar/${tipo}`, {
+        const response = await fetch(`${API_URL}/api/generate-all`, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
@@ -44,28 +41,31 @@ async function gerarDocumento(tipo) {
 
         if (!response.ok) {
             const errorData = await response.json();
-            throw new Error(errorData.detail || 'Erro ao gerar documento');
+            throw new Error(errorData.detail || 'Erro ao gerar documentos');
         }
 
         const blob = await response.blob();
         const url = window.URL.createObjectURL(blob);
         const a = document.createElement('a');
         a.href = url;
-        a.download = `${tipo}_${dados[Object.keys(dados)[0]].replace(/\s+/g, '_')}.docx`;
+        
+        const dataAssinatura = dados.processo_data.replace(/\s+/g, '_').replace(/\//g, '-');
+        a.download = `Documentos_${dados.nome.replace(/\s+/g, '_')}_${dataAssinatura}.zip`;
+        
         document.body.appendChild(a);
         a.click();
         window.URL.revokeObjectURL(url);
         document.body.removeChild(a);
 
-        mostrarMensagem(tipo, '✅ Documento gerado com sucesso!', 'success');
+        mostrarMensagem('generate', '✅ Documentos gerados e baixados com sucesso!', 'success');
     } catch (error) {
         console.error('❌ Erro:', error);
-        mostrarMensagem(tipo, `❌ ${error.message}`, 'error');
+        mostrarMensagem('generate', `❌ ${error.message}`, 'error');
     }
 }
 
-function mostrarMensagem(tipo, mensagem, classe) {
-    const msgDiv = document.getElementById(tipo + 'Msg');
+function mostrarMensagem(id, mensagem, classe) {
+    const msgDiv = document.getElementById(id + 'Msg');
     msgDiv.textContent = mensagem;
     msgDiv.className = 'message ' + classe;
     setTimeout(() => {

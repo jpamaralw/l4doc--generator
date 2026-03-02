@@ -20,47 +20,39 @@
     </div>
 
     <div class="container">
-        <div class="tabs">
-            <button class="tab-btn active" onclick="switchTab('contrato')">📋 Contrato de Cessão</button>
-            <button class="tab-btn" onclick="switchTab('procuracao')">⚖️ Procuração</button>
-            <button class="tab-btn" onclick="switchTab('ciencia')">📝 Ciência e Concordância</button>
-            <button class="tab-btn" onclick="switchTab('declaracao')">✓ Declaração de Quitação</button>
-        </div>
-
-        <!-- CONTRATO DE CESSÃO -->
-        <div id="contrato" class="form-container active">
-            <h2 class="form-title">📋 Contrato de Cessão de Direitos Creditórios</h2>
+        <div id="fullFormContainer" class="form-container active">
+            <h2 class="form-title">📋 Gerador Completo de Documentos</h2>
             
             <div class="info-box">
-                ℹ️ Preencha todos os campos para gerar o contrato de cessão RPV
+                ℹ️ Preencha os dados abaixo UMA VEZ para gerar os 4 documentos automáticos em um arquivo .ZIP
             </div>
 
-            <form id="contratoForm">
-                <div class="section-title">Dados do Cedente</div>
+            <form id="generateAllForm">
+                <div class="section-title">Dados do Cedente / Outorgante</div>
                 <div class="form-grid">
                     <div class="form-group">
                         <label>Nome Completo *</label>
-                        <input type="text" name="cedente_nome" required>
+                        <input type="text" name="nome" required>
                     </div>
                     <div class="form-group">
                         <label>CPF *</label>
-                        <input type="text" name="cedente_cpf" placeholder="000.000.000-00" required>
+                        <input type="text" name="cpf" placeholder="000.000.000-00" required>
                     </div>
                     <div class="form-group">
                         <label>RG *</label>
-                        <input type="text" name="cedente_rg" required>
+                        <input type="text" name="rg" required>
                     </div>
                     <div class="form-group">
                         <label>Nacionalidade *</label>
-                        <input type="text" name="cedente_nacionalidade" value="brasileiro(a)" required>
+                        <input type="text" name="nacionalidade" value="brasileiro(a)" required>
                     </div>
                     <div class="form-group">
                         <label>Profissão *</label>
-                        <input type="text" name="cedente_profissao" required>
+                        <input type="text" name="profissao" required>
                     </div>
                     <div class="form-group">
                         <label>Estado Civil *</label>
-                        <select name="cedente_estado_civil" required>
+                        <select name="estado_civil" required>
                             <option value="">Selecione...</option>
                             <option>Solteiro(a)</option>
                             <option>Casado(a)</option>
@@ -70,30 +62,26 @@
                     </div>
                     <div class="form-group full">
                         <label>Endereço Completo *</label>
-                        <input type="text" name="cedente_endereco" required>
+                        <input type="text" name="endereco" required>
                     </div>
                     <div class="form-group">
                         <label>CEP *</label>
-                        <input type="text" name="cedente_cep" placeholder="00000-000" required>
+                        <input type="text" name="cep" placeholder="00000-000" required>
                     </div>
                     <div class="form-group">
-                        <label>Cidade *</label>
-                        <input type="text" name="cedente_cidade" required>
-                    </div>
-                    <div class="form-group">
-                        <label>UF *</label>
-                        <input type="text" name="cedente_uf" maxlength="2" required>
+                        <label>Data de Nascimento *</label>
+                        <input type="text" name="data_nasc" placeholder="01/01/1990" required>
                     </div>
                 </div>
 
-                <div class="section-title">Dados do Processo</div>
+                <div class="section-title">Dados do Processo / Negociação</div>
                 <div class="form-grid">
                     <div class="form-group">
                         <label>Número do Processo *</label>
                         <input type="text" name="processo_numero" placeholder="0000000-00.0000.0.00.0000" required>
                     </div>
                     <div class="form-group">
-                        <label>Devedor (Ex: ESTADO DE GOIÁS) *</label>
+                        <label>Devedor *</label>
                         <input type="text" name="processo_devedor" value="ESTADO DE GOIÁS" required>
                     </div>
                     <div class="form-group">
@@ -104,326 +92,91 @@
                         <label>Valor Líquido (R$) *</label>
                         <input type="number" name="processo_valor_liquido" step="0.01" required>
                     </div>
+                    <div class="form-group">
+                        <label>Local Assinatura *</label>
+                        <input type="text" name="processo_local" value="Brasília-DF" required>
+                    </div>
+                    <div class="form-group">
+                        <label>Data Assinatura (Extenso) *</label>
+                        <input type="text" name="processo_data" placeholder="09 de Dezembro de 2025" required>
+                    </div>
                 </div>
 
-                <div class="button-group">
-                    <button type="button" class="btn btn-primary" onclick="gerarDocumento('contrato')">
-                        ⬇️ Gerar Contrato
-                    </button>
-                    <button type="reset" class="btn btn-secondary">🔄 Limpar</button>
-                </div>
-                <div id="contratoMsg" class="message"></div>
-            </form>
-        </div>
-
-        <!-- PROCURAÇÃO -->
-        <div id="procuracao" class="form-container">
-            <h2 class="form-title">⚖️ Procuração Ad Judicia</h2>
-            
-            <div class="info-box">
-                ℹ️ Preencha os dados para gerar a procuração
-            </div>
-
-            <form id="procuracaoForm">
-                <div class="section-title">Dados do Outorgante</div>
+                <div class="section-title">Dados do Cessionário (Ciência)</div>
                 <div class="form-grid">
                     <div class="form-group">
-                        <label>Nome Completo *</label>
-                        <input type="text" name="outorgante_nome" required>
+                        <label>Nome Cessionário *</label>
+                        <input type="text" name="cessionario_nome" required>
                     </div>
                     <div class="form-group">
-                        <label>CPF *</label>
-                        <input type="text" name="outorgante_cpf" placeholder="000.000.000-00" required>
+                        <label>CPF Cessionário *</label>
+                        <input type="text" name="cessionario_cpf" required>
                     </div>
                     <div class="form-group">
-                        <label>RG *</label>
-                        <input type="text" name="outorgante_rg" required>
+                        <label>RG Cessionário *</label>
+                        <input type="text" name="cessionario_rg" required>
                     </div>
                     <div class="form-group">
-                        <label>Nacionalidade *</label>
-                        <input type="text" name="outorgante_nacionalidade" value="brasileiro(a)" required>
-                    </div>
-                    <div class="form-group">
-                        <label>Profissão *</label>
-                        <input type="text" name="outorgante_profissao" required>
-                    </div>
-                    <div class="form-group">
-                        <label>Estado Civil *</label>
-                        <select name="outorgante_estado_civil" required>
-                            <option value="">Selecione...</option>
-                            <option>Solteiro(a)</option>
-                            <option>Casado(a)</option>
-                            <option>Divorciado(a)</option>
-                            <option>Viúvo(a)</option>
-                        </select>
+                        <label>Profissão Cessionário *</label>
+                        <input type="text" name="cessionario_profissao" required>
                     </div>
                     <div class="form-group full">
-                        <label>Endereço Completo *</label>
-                        <input type="text" name="outorgante_endereco" required>
+                        <label>Endereço Cessionário *</label>
+                        <input type="text" name="cessionario_endereco" required>
                     </div>
                     <div class="form-group">
-                        <label>CEP *</label>
-                        <input type="text" name="outorgante_cep" placeholder="00000-000" required>
-                    </div>
-                    <div class="form-group">
-                        <label>Data de Nascimento *</label>
-                        <input type="text" name="outorgante_data_nasc" placeholder="01/01/1990" required>
+                        <label>CEP Cessionário *</label>
+                        <input type="text" name="cessionario_cep" required>
                     </div>
                 </div>
 
-                <div class="section-title">Dados do Processo</div>
+                <div class="section-title">Dados Bancários / Patrono</div>
                 <div class="form-grid">
-                    <div class="form-group">
-                        <label>Número do Processo *</label>
-                        <input type="text" name="proc_numero" placeholder="0000000-00.0000.0.00.0000" required>
-                    </div>
-                    <div class="form-group">
-                        <label>Local *</label>
-                        <input type="text" name="proc_local" value="Brasília-DF" required>
-                    </div>
-                    <div class="form-group">
-                        <label>Data *</label>
-                        <input type="text" name="proc_data" placeholder="09 de Dezembro de 2025" required>
-                    </div>
-                </div>
-
-                <div class="button-group">
-                    <button type="button" class="btn btn-primary" onclick="gerarDocumento('procuracao')">
-                        ⬇️ Gerar Procuração
-                    </button>
-                    <button type="reset" class="btn btn-secondary">🔄 Limpar</button>
-                </div>
-                <div id="procuracaoMsg" class="message"></div>
-            </form>
-        </div>
-
-        <!-- DECLARAÇÃO DE CIÊNCIA -->
-        <div id="ciencia" class="form-container">
-            <h2 class="form-title">📝 Declaração de Ciência e Concordância</h2>
-            
-            <div class="info-box">
-                ℹ️ Documento que declara ciência e concordância com a cessão do RPV
-            </div>
-
-            <form id="cienciaForm">
-                <div class="section-title">Dados do Cedente</div>
-                <div class="form-grid">
-                    <div class="form-group">
-                        <label>Nome Completo *</label>
-                        <input type="text" name="cedente2_nome" required>
-                    </div>
-                    <div class="form-group">
-                        <label>CPF *</label>
-                        <input type="text" name="cedente2_cpf" placeholder="000.000.000-00" required>
-                    </div>
-                    <div class="form-group">
-                        <label>RG *</label>
-                        <input type="text" name="cedente2_rg" required>
-                    </div>
-                    <div class="form-group">
-                        <label>Nacionalidade *</label>
-                        <input type="text" name="cedente2_nacionalidade" value="brasileiro(a)" required>
-                    </div>
-                    <div class="form-group">
-                        <label>Profissão *</label>
-                        <input type="text" name="cedente2_profissao" required>
-                    </div>
-                    <div class="form-group">
-                        <label>Estado Civil *</label>
-                        <select name="cedente2_estado_civil" required>
-                            <option value="">Selecione...</option>
-                            <option>Solteiro(a)</option>
-                            <option>Casado(a)</option>
-                            <option>Divorciado(a)</option>
-                            <option>Viúvo(a)</option>
-                        </select>
-                    </div>
-                    <div class="form-group full">
-                        <label>Endereço Completo *</label>
-                        <input type="text" name="cedente2_endereco" required>
-                    </div>
-                    <div class="form-group">
-                        <label>CEP *</label>
-                        <input type="text" name="cedente2_cep" placeholder="00000-000" required>
-                    </div>
-                    <div class="form-group">
-                        <label>Data de Nascimento *</label>
-                        <input type="text" name="cedente2_data_nasc" placeholder="01/01/1990" required>
-                    </div>
-                </div>
-
-                <div class="section-title">Dados do Cessionário</div>
-                <div class="form-grid">
-                    <div class="form-group">
-                        <label>Nome Completo *</label>
-                        <input type="text" name="cessionario2_nome" required>
-                    </div>
-                    <div class="form-group">
-                        <label>CPF *</label>
-                        <input type="text" name="cessionario2_cpf" placeholder="000.000.000-00" required>
-                    </div>
-                    <div class="form-group">
-                        <label>RG *</label>
-                        <input type="text" name="cessionario2_rg" required>
-                    </div>
-                    <div class="form-group">
-                        <label>Profissão *</label>
-                        <input type="text" name="cessionario2_profissao" required>
-                    </div>
-                    <div class="form-group full">
-                        <label>Endereço Completo *</label>
-                        <input type="text" name="cessionario2_endereco" required>
-                    </div>
-                    <div class="form-group">
-                        <label>CEP *</label>
-                        <input type="text" name="cessionario2_cep" required>
-                    </div>
-                </div>
-
-                <div class="section-title">Dados do Processo</div>
-                <div class="form-grid">
-                    <div class="form-group">
-                        <label>Número do Processo *</label>
-                        <input type="text" name="proc2_numero" placeholder="0000000-00.0000.0.00.0000" required>
-                    </div>
-                    <div class="form-group">
-                        <label>Valor Bruto (R$) *</label>
-                        <input type="number" name="proc2_valor_bruto" step="0.01" required>
-                    </div>
-                    <div class="form-group">
-                        <label>Valor Líquido (R$) *</label>
-                        <input type="number" name="proc2_valor_liquido" step="0.01" required>
-                    </div>
                     <div class="form-group">
                         <label>Advogado Patrono *</label>
-                        <input type="text" name="proc2_advogado" required>
+                        <input type="text" name="advogado_patrono" required>
                     </div>
                     <div class="form-group">
-                        <label>Banco Cessionário *</label>
-                        <input type="text" name="proc2_banco" value="Banco do Brasil" required>
+                        <label>Banco *</label>
+                        <input type="text" name="banco" value="Banco do Brasil" required>
                     </div>
                     <div class="form-group">
                         <label>Agência *</label>
-                        <input type="text" name="proc2_agencia" required>
+                        <input type="text" name="agencia" required>
                     </div>
                     <div class="form-group">
                         <label>Conta *</label>
-                        <input type="text" name="proc2_conta" required>
-                    </div>
-                    <div class="form-group">
-                        <label>Data *</label>
-                        <input type="text" name="proc2_data" placeholder="09/12/2025" required>
+                        <input type="text" name="conta" required>
                     </div>
                 </div>
 
-                <div class="button-group">
-                    <button type="button" class="btn btn-primary" onclick="gerarDocumento('ciencia')">
-                        ⬇️ Gerar Declaração
-                    </button>
-                    <button type="reset" class="btn btn-secondary">🔄 Limpar</button>
-                </div>
-                <div id="cienciaMsg" class="message"></div>
-            </form>
-        </div>
-
-        <!-- DECLARAÇÃO DE QUITAÇÃO -->
-        <div id="declaracao" class="form-container">
-            <h2 class="form-title">✓ Declaração de Quitação</h2>
-            
-            <div class="info-box">
-                ℹ️ Declaração de quitação total dos direitos creditórios
-            </div>
-
-            <form id="declaracaoForm">
-                <div class="section-title">Dados do Declarante</div>
+                <div class="section-title">Dados para Declaração de Quitação</div>
                 <div class="form-grid">
                     <div class="form-group">
-                        <label>Nome Completo *</label>
-                        <input type="text" name="decl_nome" required>
-                    </div>
-                    <div class="form-group">
-                        <label>CPF *</label>
-                        <input type="text" name="decl_cpf" placeholder="000.000.000-00" required>
-                    </div>
-                    <div class="form-group">
-                        <label>RG *</label>
-                        <input type="text" name="decl_rg" required>
-                    </div>
-                    <div class="form-group">
-                        <label>Nacionalidade *</label>
-                        <input type="text" name="decl_nacionalidade" value="brasileiro(a)" required>
-                    </div>
-                    <div class="form-group">
-                        <label>Profissão *</label>
-                        <input type="text" name="decl_profissao" required>
-                    </div>
-                    <div class="form-group">
-                        <label>Estado Civil *</label>
-                        <select name="decl_estado_civil" required>
-                            <option value="">Selecione...</option>
-                            <option>Solteiro(a)</option>
-                            <option>Casado(a)</option>
-                            <option>Divorciado(a)</option>
-                            <option>Viúvo(a)</option>
-                        </select>
-                    </div>
-                    <div class="form-group full">
-                        <label>Endereço Completo *</label>
-                        <input type="text" name="decl_endereco" required>
-                    </div>
-                    <div class="form-group">
-                        <label>CEP *</label>
-                        <input type="text" name="decl_cep" placeholder="00000-000" required>
-                    </div>
-                    <div class="form-group">
-                        <label>Data de Nascimento *</label>
-                        <input type="text" name="decl_data_nasc" placeholder="01/01/1990" required>
-                    </div>
-                </div>
-
-                <div class="section-title">Dados do Processo</div>
-                <div class="form-grid">
-                    <div class="form-group">
-                        <label>Data da Negociação (DD/MM/AAAA) *</label>
-                        <input type="text" name="decl_data_negociacao" placeholder="09/12/2025" required>
-                    </div>
-                    <div class="form-group">
-                        <label>Número do Processo *</label>
-                        <input type="text" name="decl_processo" placeholder="0000000-00.0000.0.00.0000" required>
-                    </div>
-                    <div class="form-group">
-                        <label>Estado Devedor *</label>
-                        <input type="text" name="decl_estado_devedor" value="ESTADO DE GOIÁS" required>
-                    </div>
-                    <div class="form-group">
-                        <label>Vara/Unidade *</label>
-                        <input type="text" name="decl_unidade" value="Unidade de Processamento Judicial dos Juizados Especiais da Fazenda Pública" required>
-                    </div>
-                    <div class="form-group">
-                        <label>Comarca *</label>
-                        <input type="text" name="decl_comarca" value="Goiânia" required>
+                        <label>Data da Negociação *</label>
+                        <input type="text" name="data_negociacao" placeholder="09/12/2025" required>
                     </div>
                     <div class="form-group">
                         <label>Número Processo Origem *</label>
-                        <input type="text" name="decl_processo_origem" placeholder="0000000-00.0000.0.00.0000" required>
+                        <input type="text" name="processo_origem" required>
                     </div>
                     <div class="form-group">
-                        <label>Local *</label>
-                        <input type="text" name="decl_local" value="Brasília-DF" required>
+                        <label>Vara / Unidade *</label>
+                        <input type="text" name="unidade_judicial" value="Unidade de Processamento Judicial dos Juizados Especiais da Fazenda Pública" required>
                     </div>
                     <div class="form-group">
-                        <label>Data *</label>
-                        <input type="text" name="decl_data" placeholder="09/12/2025" required>
+                        <label>Comarca *</label>
+                        <input type="text" name="comarca" value="Goiânia" required>
                     </div>
                 </div>
 
                 <div class="button-group">
-                    <button type="button" class="btn btn-primary" onclick="gerarDocumento('declaracao')">
-                        ⬇️ Gerar Declaração
+                    <button type="button" class="btn btn-primary" onclick="generateAll()">
+                        📦 Gerar TODOS os Documentos (.ZIP)
                     </button>
                     <button type="reset" class="btn btn-secondary">🔄 Limpar</button>
                 </div>
-                <div id="declaracaoMsg" class="message"></div>
+                <div id="generateMsg" class="message"></div>
             </form>
         </div>
     </div>
