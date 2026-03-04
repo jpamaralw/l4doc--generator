@@ -150,7 +150,7 @@ class DeclaracaoPayload(BaseModel):
     decl_data: str
 
 class AllDocumentsPayload(BaseModel):
-    # Cedente / Outorgante / Declarante (Geralmente a mesma pessoa)
+    # Cedente / Outorgante / Declarante
     nome: str
     cpf: str
     rg: str
@@ -161,6 +161,16 @@ class AllDocumentsPayload(BaseModel):
     cep: str
     data_nasc: str
     
+    # Cessionário
+    nome_cessionario: str
+    nacionalidade_cessionario: str = "brasileira"
+    estado_civil_cessionario: str
+    profissao_cessionario: str
+    cpf_cessionario: str
+    rg_cessionario: str
+    endereco_cessionario: str
+    cep_cessionario: str
+    
     # Processo / Negociação
     processo_numero: str
     processo_devedor: str = "ESTADO DE GOIÁS"
@@ -169,20 +179,25 @@ class AllDocumentsPayload(BaseModel):
     processo_local: str = "Brasília-DF"
     processo_data: str  # Ex: 09 de Dezembro de 2025
     
-    # Ciência (Cessionário)
-    cessionario_nome: str
-    cessionario_cpf: str
-    cessionario_rg: str
-    cessionario_profissao: str
-    cessionario_endereco: str
-    cessionario_cep: str
-    
     # Dados Bancários / Outros
     advogado_patrono: str
     banco: str = "Banco do Brasil"
     agencia: str
     conta: str
     
+    # Outorgados (Procuração)
+    outorgado_nome_1: str = "DR. FÁBIO BATISTA BASTOS"
+    outorgado_nacionalidade_1: str = "brasileiro"
+    outorgado_estado_civil_1: str = "solteiro"
+    outorgado_profissao_1: str = "advogado"
+    outorgado_oab_1: str = "40.115"
+    
+    outorgado_nome_2: str = "DRA. NATANE ALINE DE CARVALHO MONTEIRO"
+    outorgado_nacionalidade_2: str = "brasileira"
+    outorgado_profissao_2: str = "advogada"
+    outorgado_oab_2: str = "63.726"
+    outorgado_cpf_2: str = "115.617.116-40"
+
     # Declaração Quitação
     data_negociacao: str
     estado_devedor: str = "ESTADO DE GOIÁS"
@@ -202,27 +217,65 @@ async def generate_all(payload: AllDocumentsPayload):
         # Buffer para o ZIP
         zip_buffer = io.BytesIO()
         
+        # Contexto unificado para todos os templates
+        full_context = {
+            # Cedente
+            "nome_cedente": payload.nome,
+            "cpf_cedente": payload.cpf,
+            "rg_cedente": payload.rg,
+            "nacionalidade_cedente": payload.nacionalidade,
+            "profissao_cedente": payload.profissao,
+            "estado_civil_cedente": payload.estado_civil,
+            "endereco_cedente": payload.endereco,
+            "cep_cedente": payload.cep,
+            "data_nascimento": payload.data_nasc,
+            
+            # Cessionário
+            "nome_cessionario": payload.nome_cessionario,
+            "nacionalidade_cessionario": payload.nacionalidade_cessionario,
+            "estado_civil_cessionario": payload.estado_civil_cessionario,
+            "profissao_cessionario": payload.profissao_cessionario,
+            "cpf_cessionario": payload.cpf_cessionario,
+            "rg_cessionario": payload.rg_cessionario,
+            "endereco_cessionario": payload.endereco_cessionario,
+            "cep_cessionario": payload.cep_cessionario,
+            
+            # Processo
+            "numero_processo": payload.processo_numero,
+            "devedor": payload.processo_devedor,
+            "valor_bruto": format_currency(payload.processo_valor_bruto),
+            "valor_liquido": format_currency(payload.processo_valor_liquido),
+            "local": payload.processo_local,
+            "data_contrato": payload.processo_data,
+            "data_negociacao": payload.data_negociacao,
+            "vara_unidade": payload.unidade_judicial,
+            "comarca": payload.comarca,
+            "numero_processo_origem": payload.processo_origem,
+            
+            # Bancários / Advogado
+            "nome_advogado": payload.advogado_patrono,
+            "agencia": payload.agencia,
+            "conta": payload.conta,
+            "banco": payload.banco,
+            
+            # Outorgados
+            "outorgado_nome_1": payload.outorgado_nome_1,
+            "outorgado_nacionalidade_1": payload.outorgado_nacionalidade_1,
+            "outorgado_estado_civil_1": payload.outorgado_estado_civil_1,
+            "outorgado_profissao_1": payload.outorgado_profissao_1,
+            "outorgado_oab_1": payload.outorgado_oab_1,
+            "outorgado_nome_2": payload.outorgado_nome_2,
+            "outorgado_nacionalidade_2": payload.outorgado_nacionalidade_2,
+            "outorgado_profissao_2": payload.outorgado_profissao_2,
+            "outorgado_oab_2": payload.outorgado_oab_2,
+            "outorgado_cpf_2": payload.outorgado_cpf_2,
+        }
+
         with zipfile.ZipFile(zip_buffer, "a", zipfile.ZIP_DEFLATED, False) as zip_file:
             # 1. Contrato
             template_contrato = "templates/template-cessao-rpv.docx"
             doc_contrato = DocxTemplate(template_contrato)
-            ctx_contrato = {
-                "nome_cedente": payload.nome,
-                "cpf_cedente": payload.cpf,
-                "rg_cedente": payload.rg,
-                "nacionalidade_cedente": payload.nacionalidade,
-                "profissao_cedente": payload.profissao,
-                "estado_civil_cedente": payload.estado_civil,
-                "endereco_cedente": payload.endereco,
-                "cep_cedente": payload.cep,
-                "cidade_cedente": payload.comarca,
-                "uf_cedente": "GO", # Default
-                "numero_processo": payload.processo_numero,
-                "devedor": payload.processo_devedor,
-                "valor_bruto": format_currency(payload.processo_valor_bruto),
-                "valor_liquido": format_currency(payload.processo_valor_liquido),
-            }
-            doc_contrato.render(ctx_contrato)
+            doc_contrato.render(full_context)
             buf_contrato = io.BytesIO()
             doc_contrato.save(buf_contrato)
             zip_file.writestr(f"1_Contrato_Cessao_{nome_limpo}.docx", buf_contrato.getvalue())
@@ -230,21 +283,7 @@ async def generate_all(payload: AllDocumentsPayload):
             # 2. Procuração
             template_proc = "templates/template-procuracao-adjudicia.docx"
             doc_proc = DocxTemplate(template_proc)
-            ctx_proc = {
-                "Nome": payload.nome,
-                "Nacionalidade": payload.nacionalidade,
-                "Estado Civil": payload.estado_civil,
-                "Profissao": payload.profissao,
-                "RG": payload.rg,
-                "CPF": payload.cpf,
-                "Data Nasc": payload.data_nasc,
-                "Endereco": payload.endereco,
-                "CEP": payload.cep,
-                "Numero Processo": payload.processo_numero,
-                "Local": payload.processo_local,
-                "Data": payload.processo_data,
-            }
-            doc_proc.render(ctx_proc)
+            doc_proc.render(full_context)
             buf_proc = io.BytesIO()
             doc_proc.save(buf_proc)
             zip_file.writestr(f"2_Procuracao_{nome_limpo}.docx", buf_proc.getvalue())
@@ -252,32 +291,7 @@ async def generate_all(payload: AllDocumentsPayload):
             # 3. Ciência
             template_ciencia = "templates/template-dec-ciencia-concord.docx"
             doc_ciencia = DocxTemplate(template_ciencia)
-            ctx_ciencia = {
-                "Nome": payload.nome,
-                "nacionalidade": payload.nacionalidade,
-                "Profissao": payload.profissao,
-                "Estado Civil": payload.estado_civil,
-                "RG": payload.rg,
-                "CPF": payload.cpf,
-                "Data": payload.data_nasc,
-                "Endereco": payload.endereco,
-                "CEP": payload.cep,
-                "Nome_Cessionario": payload.cessionario_nome,
-                "Profissao_Cessionario": payload.cessionario_profissao,
-                "CPF_Cessionario": payload.cessionario_cpf,
-                "RG_Cessionario": payload.cessionario_rg,
-                "Endereco_Cessionario": payload.cessionario_endereco,
-                "CEP_Cessionario": payload.cessionario_cep,
-                "Numero": payload.processo_numero,
-                "Valor_Bruto": format_currency(payload.processo_valor_bruto),
-                "Valor_Liquido": format_currency(payload.processo_valor_liquido),
-                "Nome Advogado": payload.advogado_patrono,
-                "Agencia": payload.agencia,
-                "Conta": payload.conta,
-                "Banco": payload.banco,
-                "Data_Final": payload.processo_data,
-            }
-            doc_ciencia.render(ctx_ciencia)
+            doc_ciencia.render(full_context)
             buf_ciencia = io.BytesIO()
             doc_ciencia.save(buf_ciencia)
             zip_file.writestr(f"3_Declaracao_Ciencia_{nome_limpo}.docx", buf_ciencia.getvalue())
@@ -285,33 +299,13 @@ async def generate_all(payload: AllDocumentsPayload):
             # 4. Quitação
             template_quit = "templates/template-dec-quitacao.docx"
             doc_quit = DocxTemplate(template_quit)
-            ctx_quit = {
-                "Nome": payload.nome,
-                "Nacionalidade": payload.nacionalidade,
-                "Estado Civil": payload.estado_civil,
-                "Profissao": payload.profissao,
-                "RG": payload.rg,
-                "CPF": payload.cpf,
-                "Data": payload.data_nasc,
-                "Endereco": payload.endereco,
-                "CEP": payload.cep,
-                "DD/MM/AAAA": payload.data_negociacao,
-                "Numero Processo": payload.processo_numero,
-                "Estado": payload.estado_devedor,
-                "Vara/Unidade": payload.unidade_judicial,
-                "Comarca": payload.comarca,
-                "Numero Processo Origem": payload.processo_origem,
-                "Local": payload.processo_local,
-                "Data_Final": payload.processo_data,
-            }
-            doc_quit.render(ctx_quit)
+            doc_quit.render(full_context)
             buf_quit = io.BytesIO()
             doc_quit.save(buf_quit)
             zip_file.writestr(f"4_Declaracao_Quitacao_{nome_limpo}.docx", buf_quit.getvalue())
 
         zip_buffer.seek(0)
         
-        # Salvar no banco (opcional, mas mantendo o padrão)
         save_document(
             tipo="geracao_completa_zip",
             nome_principal=payload.nome,

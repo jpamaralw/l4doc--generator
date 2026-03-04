@@ -102,31 +102,45 @@
                     </div>
                 </div>
 
-                <div class="section-title">Dados do Cessionário (Ciência)</div>
+                <div class="section-title">Dados do Cessionário</div>
                 <div class="form-grid">
                     <div class="form-group">
-                        <label>Nome Cessionário *</label>
-                        <input type="text" name="cessionario_nome" required>
+                        <label>Nome Completo *</label>
+                        <input type="text" name="nome_cessionario" required>
                     </div>
                     <div class="form-group">
-                        <label>CPF Cessionário *</label>
-                        <input type="text" name="cessionario_cpf" required>
+                        <label>Nacionalidade *</label>
+                        <input type="text" name="nacionalidade_cessionario" value="brasileira" required>
                     </div>
                     <div class="form-group">
-                        <label>RG Cessionário *</label>
-                        <input type="text" name="cessionario_rg" required>
+                        <label>Estado Civil *</label>
+                        <select name="estado_civil_cessionario" required>
+                            <option value="">Selecione...</option>
+                            <option>Solteiro(a)</option>
+                            <option>Casado(a)</option>
+                            <option>Divorciado(a)</option>
+                            <option>Viúvo(a)</option>
+                        </select>
                     </div>
                     <div class="form-group">
-                        <label>Profissão Cessionário *</label>
-                        <input type="text" name="cessionario_profissao" required>
+                        <label>Profissão *</label>
+                        <input type="text" name="profissao_cessionario" required>
+                    </div>
+                    <div class="form-group">
+                        <label>CPF *</label>
+                        <input type="text" name="cpf_cessionario" placeholder="000.000.000-00" required>
+                    </div>
+                    <div class="form-group">
+                        <label>RG *</label>
+                        <input type="text" name="rg_cessionario" required>
                     </div>
                     <div class="form-group full">
-                        <label>Endereço Cessionário *</label>
-                        <input type="text" name="cessionario_endereco" required>
+                        <label>Endereço Completo *</label>
+                        <input type="text" name="endereco_cessionario" required>
                     </div>
                     <div class="form-group">
-                        <label>CEP Cessionário *</label>
-                        <input type="text" name="cessionario_cep" required>
+                        <label>CEP *</label>
+                        <input type="text" name="cep_cessionario" placeholder="00000-000" required>
                     </div>
                 </div>
 

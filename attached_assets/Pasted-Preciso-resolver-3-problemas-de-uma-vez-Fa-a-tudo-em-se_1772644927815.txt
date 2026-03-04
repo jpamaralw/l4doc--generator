@@ -1,0 +1,131 @@
+Preciso resolver 3 problemas de uma vez. Faça tudo em sequência sem parar.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+PROBLEMA 1 — CORRIGIR OS 4 TEMPLATES
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+Crie um script Python chamado fix_templates.py na raiz do projeto.
+Esse script deve abrir cada .docx da pasta templates/ com python-docx,
+substituir os placeholders errados e salvar. Execute o script ao final.
+
+REGRA CRÍTICA: ao substituir texto nos runs do python-docx,
+preserve o estilo (bold, underline, italic) — só troque o .text do run,
+nunca delete e recrie o parágrafo.
+
+--- template-dec-ciencia&concord.docx ---
+Substituições em ORDEM DE APARIÇÃO no documento:
+
+1ª parte (CEDENTE):
+  "[Nome]"          → "{{nome_cedente}}"
+  "[nacionalidade]" → "{{nacionalidade_cedente}}"
+  "[Profissão]"     → "{{profissao_cedente}}"
+  "[Estado Civil]"  → "{{estado_civil_cedente}}"
+  "[RG]"            → "{{rg_cedente}}"           (1ª ocorrência)
+  "[CPF]"           → "{{cpf_cedente}}"           (1ª ocorrência)
+  "[Data]"          → "{{data_nascimento}}"       (1ª ocorrência)
+  "[Endereço]"      → "{{endereco_cedente}}"      (1ª ocorrência)
+  "[CEP]"           → "{{cep_cedente}}"           (1ª ocorrência)
+
+2ª parte (CESSIONÁRIO):
+  "[Nome]"          → "{{nome_cessionario}}"      (2ª ocorrência)
+  "[Profissão]"     → "{{profissao_cessionario}}" (2ª ocorrência)
+  "[Estado Civil]"  → "{{estado_civil_cessionario}}" (2ª ocorrência)
+  "[CPF]"           → "{{cpf_cessionario}}"       (2ª ocorrência)
+  "[RG]"            → "{{rg_cessionario}}"        (2ª ocorrência)
+  "[Endereço]"      → "{{endereco_cessionario}}"  (2ª ocorrência)
+  "[CEP]"           → "{{cep_cessionario}}"       (2ª ocorrência)
+
+Campos únicos:
+  "[Número]"        → "{{numero_processo}}"
+  "[Valor]"         → "{{valor_bruto}}"           (1ª ocorrência)
+  "[Valor]"         → "{{valor_liquido}}"          (2ª ocorrência)
+  "[Nome Advogado]" → "{{nome_advogado}}"
+  "[Agência]"       → "{{agencia}}"
+  "[Conta]"         → "{{conta}}"
+  "[Banco]"         → "{{banco}}"
+  "[Nome Cedente]"  → "{{nome_cedente}}"           (assinatura final)
+
+--- template-dec-quitação (1).docx ---
+  "[Nome]"                   → "{{nome_cedente}}"         (1ª ocorrência)
+  "[Nacionalidade]"          → "{{nacionalidade_cedente}}"
+  "[Estado Civil]"           → "{{estado_civil_cedente}}"
+  "[Profissão]"              → "{{profissao_cedente}}"
+  "[RG]"                     → "{{rg_cedente}}"
+  "[CPF]"                    → "{{cpf_cedente}}"
+  "[Data]"                   → "{{data_nascimento}}"
+  "[Endereço]"               → "{{endereco_cedente}}"
+  "[CEP]"                    → "{{cep_cedente}}"
+  "[DD/MM/AAAA]"             → "{{data_negociacao}}"
+  "[Número Processo]"        → "{{numero_processo}}"
+  "[Vara/Unidade]"           → "{{vara_unidade}}"
+  "[Comarca]"                → "{{comarca}}"
+  "[Nome]"                   → "{{nome_cedente}}"         (2ª ocorrência)
+  "[Número Processo Origem]" → "{{numero_processo_origem}}"
+  "[Local]"                  → "{{local}}"
+  "[Data]"                   → "{{data_contrato}}"        (última linha)
+
+--- template-procuração-adjudicia (1).docx ---
+Substituições OUTORGANTE:
+  "[Nome]"          → "{{nome_cedente}}"          (1ª ocorrência)
+  "[Nacionalidade]" → "{{nacionalidade_cedente}}"
+  "[Estado Civil]"  → "{{estado_civil_cedente}}"
+  "[Profissão]"     → "{{profissao_cedente}}"
+  "[RG]"            → "{{rg_cedente}}"
+  "[CPF]"           → "{{cpf_cedente}}"           (1ª ocorrência)
+  "[Data Nasc]"     → "{{data_nascimento}}"
+  "[Endereço]"      → "{{endereco_cedente}}"
+  "[CEP]"           → "{{cep_cedente}}"
+
+Substituir bloco hardcoded do OUTORGADO:
+  "DR. FÁBIO BATISTA BASTOS" → "{{outorgado_nome_1}}"
+  "brasileiro, solteiro, advogado" → "{{outorgado_nacionalidade_1}}, {{outorgado_estado_civil_1}}, {{outorgado_profissao_1}}"
+  "sob o nº 40.115"          → "sob o nº {{outorgado_oab_1}}"
+  "DRA. NATANE ALINE DE CARVALHO MONTEIRO" → "{{outorgado_nome_2}}"
+  "brasileira, advogada"     → "{{outorgado_nacionalidade_2}}, {{outorgado_profissao_2}}"
+  "OAB/DF nº 63.726"         → "OAB/DF nº {{outorgado_oab_2}}"
+  "CPF n°115.617.116-40"     → "CPF nº {{outorgado_cpf_2}}"
+
+Campos finais:
+  "[Número Processo]" → "{{numero_processo}}"
+  "[Data]"            → "{{data_contrato}}"        (2ª ocorrência)
+  "[Nome]"            → "{{nome_cedente}}"          (assinatura final)
+  "[CPF]"             → "{{cpf_cedente}}"           (assinatura final)
+
+--- template-cessao-rpv.docx ---
+Substituir APENAS:
+  1) Bloco hardcoded do CESSIONÁRIO (cabeçalho):
+     "LEDA MARIA SOARES JANOT, brasileira, advogada, casada, portadora do CPF: 021.159.805-49 e RG nº 483293 SSP BA, residente a SMPW Q8 conjunto 3, casa 1, Park way, Brasília/DF, CEP: 71740-803"
+     → "{{nome_cessionario}}, {{nacionalidade_cessionario}}, {{profissao_cessionario}}, {{estado_civil_cessionario}}, portadora do CPF: {{cpf_cessionario}} e RG nº {{rg_cessionario}}, residente a {{endereco_cessionario}}, CEP: {{cep_cessionario}}"
+
+  2) Número de processo hardcoded na Cláusula 1 item 3:
+     "5314729-14.2025.8.09.0051"  → "{{numero_processo}}"
+
+  3) "Devedor: Devedor:" → "Devedor:"
+
+Ao terminar, rode o script e imprima quais arquivos foram salvos com sucesso.
+Depois rode uma verificação: abra cada arquivo salvo e procure se ainda existe
+qualquer texto com "[" ou "]" — liste o que encontrar.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+PROBLEMA 2 — ADICIONAR CAMPOS DO CESSIONÁRIO NO FORMULÁRIO
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+No formulário HTML (frontend), adicione uma seção "DADOS DO CESSIONÁRIO"
+com os campos abaixo (mesma estrutura visual das outras seções):
+
+  - Nome Completo         → name="nome_cessionario"
+  - Nacionalidade         → name="nacionalidade_cessionario"
+  - Estado Civil (select) → name="estado_civil_cessionario"
+  - Profissão             → name="profissao_cessionario"
+  - CPF (máscara)         → name="cpf_cessionario"
+  - RG                    → name="rg_cessionario"
+  - Endereço Completo     → name="endereco_cessionario"
+  - CEP (máscara)         → name="cep_cessionario"
+
+No backend (app.py), garanta que esses campos novos são lidos do form/JSON
+e incluídos no context passado para o docxtpl de TODOS os templates.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+PROBLEMA 3 — COMMIT NO GITHUB
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+Após tudo funcionando, faça um commit e push para o repositório GitHub
+conectado a este Repl com a mensagem:
+"fix: corrige templates docxtpl e adiciona campos cessionario no formulario"
