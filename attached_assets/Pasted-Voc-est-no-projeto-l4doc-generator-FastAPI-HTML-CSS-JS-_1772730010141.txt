@@ -1,0 +1,263 @@
+Você está no projeto l4doc--generator (FastAPI + HTML/CSS/JS frontend + templates .docx).
+Execute TUDO em modo Autônomo. Não pare para perguntar — tome as melhores decisões e avance.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+PASSO 0 — LIMPEZA
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+Delete da raiz do projeto:
+CHECKLIST_FINAL.md, MUDANCAS_REALIZADAS.md, LEIA-ME-PRIMEIRO.md,
+INDICE_DOCUMENTACAO.md, NOTICIA_RAPIDA.txt, PROMPT_PARA_GESTOR.md,
+PROMPTS_PRONTOS.md, RELATORIO_FINAL.md, RELATORIO_VISUAL.html,
+RESUMO_FINAL.md, RESUMO_PARA_VOCE.txt, STATUS_FINAL.txt,
+SUMARIO_EXECUTIVO.md, exemplos_uso.py, debug_procuracao.py,
+debug_test.py, test_all_endpoints.py, test_simple.py
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+PASSO 1 — CORRIGIR VARIÁVEIS NOS 4 TEMPLATES EXISTENTES
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+Crie e execute fix_templates.py usando python-docx.
+REGRA: preserve bold/underline/italic. Só troque .text dos runs. Delete o script após executar.
+
+─── template-dec-quitacao.docx ───
+Renomear variáveis genéricas → específicas:
+  {{nome}} (todas ocorrências) → {{nome_cedente}}
+  {{nacionalidade}}            → {{nacionalidade_cedente}}
+  {{estado_civil}}             → {{estado_civil_cedente}}
+  {{profissao}}                → {{profissao_cedente}}
+  {{rg}}                       → {{rg_cedente}}
+  {{cpf}}                      → {{cpf_cedente}}
+  {{endereco}}                 → {{endereco_cedente}}
+  {{cep}}                      → {{cep_cedente}}
+  {{data_nascimento}} na última linha → {{data_contrato}}
+  (manter {{data_nascimento}} onde aparecer após "nascido em")
+  "ESTADO DO GOIAS" hardcoded  → {{devedor}}
+
+─── template-procuracao-adjudicia.docx ───
+  {{nome}} (todas ocorrências) → {{nome_cedente}}
+  {{nacionalidade}}            → {{nacionalidade_cedente}}
+  {{estado_civil}}             → {{estado_civil_cedente}}
+  {{profissao}}                → {{profissao_cedente}}
+  {{rg}}                       → {{rg_cedente}}
+  {{cpf}}                      → {{cpf_cedente}}
+  {{endereco}}                 → {{endereco_cedente}}
+  {{cep}}                      → {{cep_cedente}}
+  {{Data}}                     → {{data_contrato}}
+  {{Nome}}                     → {{nome_cedente}}
+  (outorgado_* já estão corretos — não mexer)
+
+─── template-dec-ciencia_concord.docx ───
+  Este template usa as mesmas tags para cedente E cessionário. Corrigir por posição:
+
+  1ª ocorrência de cada campo (bloco CEDENTE):
+    {{nome}}        → {{nome_cedente}}
+    {{nacionalidade}} → {{nacionalidade_cedente}}
+    {{profissao}}   → {{profissao_cedente}}
+    {{estado_civil}} → {{estado_civil_cedente}}
+    {{rg}}          → {{rg_cedente}}
+    {{cpf}}         → {{cpf_cedente}}
+    {{data}}        → {{data_nascimento}}
+    {{endereco}}    → {{endereco_cedente}}
+    {{cep}}         → {{cep_cedente}}
+
+  2ª ocorrência (bloco CESSIONÁRIO, após "em face do(a) cessionário(a)"):
+    {{nome}}        → {{nome_cessionario}}
+    {{profissao}}   → {{profissao_cessionario}}
+    {{estado_civil}} → {{estado_civil_cessionario}}
+    {{cpf}}         → {{cpf_cessionario}}
+    {{rg}}          → {{rg_cessionario}}
+    {{endereco}}    → {{endereco_cessionario}}
+    {{cep}}         → {{cep_cessionario}}
+
+  Campos únicos:
+    {{valor}} (1ª) → {{valor_bruto}}
+    {{valor}} (2ª) → {{valor_liquido}}
+    {{data}} última linha → {{data_contrato}}
+    ({{nome_advogado}}, {{agencia}}, {{conta}}, {{banco}} — já corretos)
+
+  Assinatura final:
+    {{nome}} → {{nome_cedente}}
+    {{cpf}}  → {{cpf_cedente}}
+
+─── template-cessao-rpv.docx ───
+  Este template já está bem. Verificar apenas:
+  - Confirmar que {{pix}} existe na tabela bancária
+  - Confirmar que {{data_contrato}} está na linha de data final
+  - Confirmar que {{nome_cedente}} e {{nome_cessionario}} estão nas assinaturas
+  - Se encontrar "Devedor: Devedor:" → corrigir para "Devedor:"
+
+Após salvar: scan em cada arquivo — listar qualquer {{ que não seja variável válida.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+PASSO 2 — CRIAR NOVOS TEMPLATES COM LOGO L4 ATIVOS
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+Salve os logos na pasta static/images/:
+  - IsotipoL4.jpg (ícone quadrado preto/azul)
+  - GRUPOL4.jpg (logo horizontal com texto)
+
+Crie create_branded_templates.py que gera 4 novos arquivos em templates/branded/:
+  1_cessao-rpv-branded.docx
+  2_procuracao-branded.docx
+  3_ciencia-concordancia-branded.docx
+  4_quitacao-branded.docx
+
+Cada template deve ter:
+  CABEÇALHO: logo IsotipoL4.jpg à esquerda (2cm) + "L4 ATIVOS — Assessoria e Consultoria Ltda."
+  à direita em negrito, fonte Arial 10pt, linha separadora azul (#1a4f8a) abaixo.
+
+  CORPO: mesmo conteúdo jurídico dos templates originais corrigidos no Passo 1,
+  com as MESMAS variáveis {{...}} — o backend usa o mesmo context para ambos.
+
+  RODAPÉ: linha separadora + "L4 Ativos Assessoria e Consultoria Ltda. | Brasília-DF"
+  em fonte Arial 8pt centralizado.
+
+  FORMATAÇÃO GERAL:
+  - Fonte Arial (não Times New Roman nem Courier)
+  - Títulos em negrito tamanho 12
+  - Corpo tamanho 11, espaçamento 1.15
+  - Margens: superior 2.5cm, inferior 2cm, esquerda/direita 2.5cm
+
+Execute o script. Delete após executar.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+PASSO 3 — AJUSTAR BACKEND (app.py)
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+3.1) Adicionar parâmetro `template_type` no payload: "padrao" ou "branded" (default: "padrao").
+  - Se "padrao": usar templates/ normais
+  - Se "branded": usar templates/branded/
+
+3.2) Context do docxtpl — garantir TODAS estas chaves (fallback "" se ausente):
+
+  Cedente:    nome_cedente, nacionalidade_cedente, profissao_cedente,
+              estado_civil_cedente, rg_cedente, cpf_cedente,
+              data_nascimento, endereco_cedente, cep_cedente,
+              cidade_cedente, uf_cedente
+
+  Cessionário: nome_cessionario, nacionalidade_cessionario,
+               profissao_cessionario, estado_civil_cessionario,
+               cpf_cessionario, rg_cessionario,
+               endereco_cessionario, cep_cessionario
+
+  Bancário:   banco, agencia, conta, pix
+
+  Processo:   numero_processo, numero_processo_origem, devedor,
+              vara_unidade, comarca, uf_comarca
+
+  Financeiro: valor_bruto, valor_bruto_extenso, percentual_honorarios,
+              valor_liquido, valor_liquido_extenso
+
+  Advogados:  nome_advogado,
+              outorgado_nome_1, outorgado_nacionalidade_1,
+              outorgado_estado_civil_1, outorgado_profissao_1, outorgado_oab_1,
+              outorgado_nome_2, outorgado_nacionalidade_2,
+              outorgado_estado_civil_2, outorgado_profissao_2,
+              outorgado_oab_2, outorgado_cpf_2
+
+  Datas/Local: data_contrato, data_negociacao, local
+
+3.3) Criar tabela SQLite "historico" em l4docs.db:
+  id, usuario(text), cedente_nome(text), numero_processo(text),
+  template_type(text), data_geracao(datetime default now), hora_geracao(text)
+  Salvar registro a cada geração bem-sucedida.
+
+3.4) Novos endpoints:
+  GET /api/historico       → lista todos (desc)
+  GET /api/historico/stats → { total, hoje, cedentes_unicos, ultimos_7_dias[] }
+  GET /curadoria           → serve frontend/curadoria.html
+  GET /guia                → serve frontend/guia.html
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+PASSO 4 — REFORMULAR FORMULÁRIO (frontend/index.html)
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+4.1) Seções na ordem:
+  👤 DADOS DO CEDENTE / OUTORGANTE
+     nome_cedente, cpf_cedente (máscara), rg_cedente,
+     nacionalidade_cedente (default "brasileiro(a)"),
+     profissao_cedente, estado_civil_cedente (select),
+     data_nascimento, endereco_cedente, cep_cedente,
+     cidade_cedente, uf_cedente (dropdown estados)
+
+  🏦 DADOS BANCÁRIOS DO CEDENTE
+     banco (default "Banco do Brasil"), agencia, conta, pix
+
+  🤝 DADOS DO CESSIONÁRIO
+     nome_cessionario, cpf_cessionario (máscara), rg_cessionario,
+     nacionalidade_cessionario, profissao_cessionario,
+     estado_civil_cessionario (select),
+     endereco_cessionario, cep_cessionario
+
+  ⚖️ DADOS DO PROCESSO
+     numero_processo (máscara 0000000-00.0000.0.00.0000),
+     devedor (default "ESTADO DE GOIÁS"),
+     uf_comarca (dropdown estados, default "GO"),
+     comarca (default "Goiânia"),
+     vara_unidade (default "Unidade de Processamento Judicial dos Juizados Especiais da Fazenda Pública"),
+     numero_processo_origem
+
+  💰 DADOS FINANCEIROS
+     valor_bruto (máscara R$), valor_bruto_extenso (texto livre),
+     percentual_honorarios (%, default "20"),
+     valor_liquido (máscara R$, calcular auto = bruto - honorários%),
+     valor_liquido_extenso (texto livre)
+
+  👨‍💼 ADVOGADOS OUTORGADOS
+     Outorgado 1 pré-preenchido (editável):
+       outorgado_nome_1: "DR. FÁBIO BATISTA BASTOS"
+       outorgado_nacionalidade_1: "brasileiro"
+       outorgado_estado_civil_1: "solteiro"
+       outorgado_profissao_1: "advogado"
+       outorgado_oab_1: "40.115"
+     Outorgado 2 pré-preenchido (editável):
+       outorgado_nome_2: "DRA. NATANE ALINE DE CARVALHO MONTEIRO"
+       outorgado_nacionalidade_2: "brasileira"
+       outorgado_estado_civil_2: "solteira"
+       outorgado_profissao_2: "advogada"
+       outorgado_oab_2: "63.726"
+       outorgado_cpf_2: "115.617.116-40"
+     Botão "↺ Restaurar advogados padrão"
+     Campo: nome_advogado (advogado patrono do processo)
+
+  📅 DATAS E LOCAL
+     local (default "Brasília"),
+     data_contrato (date, default hoje),
+     data_negociacao (date)
+
+  🎨 TIPO DE TEMPLATE (radio/toggle):
+     ○ Padrão (original)  ● L4 Ativos (com logo)
+
+4.2) JS — converter datas YYYY-MM-DD → DD/MM/AAAA antes de enviar.
+4.3) JS — calcular valor_liquido automaticamente quando valor_bruto ou percentual mudar.
+4.4) Validação: campos obrigatórios com borda vermelha se vazio ao tentar enviar.
+4.5) Botão gerar: spinner "⏳ Gerando documentos..." durante request.
+4.6) Toast sucesso: "✅ 4 documentos gerados!" | Toast erro com mensagem.
+4.7) Header: links "📋 Gerador | 📊 Histórico | 📖 Guia"
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+PASSO 5 — TELA DE CURADORIA (frontend/curadoria.html)
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+- Proteção: prompt de senha no load → "l4admin2026" → se errar redireciona para /
+- Cards: Total Gerado | Hoje | Cedentes Únicos
+- Tabela: Data | Hora | Cedente | Processo | Template | Operador
+- Filtro por data (de/até) + busca por cedente
+- Botão "📥 Exportar CSV"
+- Dark theme igual ao sistema
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+PASSO 6 — GUIA DA EQUIPE (frontend/guia.html)
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+- Passo a passo de como gerar documentos
+- Tabela: campo → onde aparece nos docs
+- Diferença entre template Padrão e L4 Ativos
+- FAQ: ZIP não baixa | alterar advogados | ver histórico | valor por extenso | cessionário
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+PASSO 7 — TESTAR, COMMITAR E PUBLICAR
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+1) Rodar a aplicação
+2) Gerar ZIP com template "padrão" — abrir os 4 docs e confirmar sem campos vazios
+3) Gerar ZIP com template "branded" — confirmar logo aparece e sem campos vazios
+4) Confirmar /curadoria (senha l4admin2026) registra histórico
+5) Git commit + push:
+   "feat: templates corrigidos, branded L4, formulario completo, curadoria e guia"
+6) Deploy/Publish no Replit
