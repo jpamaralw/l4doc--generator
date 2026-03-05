@@ -1,0 +1,213 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>L4 Ativos - Guia de Uso</title>
+  <link rel="icon" href="data:,">
+  <style>
+    *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+    body{background:#060f1e;min-height:100vh;font-family:'Inter',system-ui,sans-serif;color:#e2e8f0;line-height:1.6}
+    header{display:flex;justify-content:space-between;align-items:center;padding:1.2rem 2rem;background:rgba(15,23,42,.95);border-bottom:1px solid #1e3a5f;position:sticky;top:0;z-index:100;flex-wrap:wrap;gap:1rem}
+    .header-left{display:flex;align-items:center;gap:1rem}
+    .header-left img{height:48px}
+    .header-left h1{font-size:1.2rem;margin:0;color:#e2e8f0}
+    .header-left p{font-size:.8rem;color:#64748b;margin:0}
+    nav a{color:#94a3b8;text-decoration:none;font-size:.95rem;margin-left:1.5rem;transition:color .2s}
+    nav a:hover{color:#3b82f6}
+    .container{max-width:900px;margin:0 auto;padding:2rem 1.5rem}
+    .page-title{font-size:1.8rem;font-weight:700;color:#e2e8f0;margin-bottom:.5rem}
+    .page-sub{color:#64748b;margin-bottom:2rem}
+    .section{background:rgba(15,23,42,.8);border:1px solid #1e3a5f;border-radius:12px;padding:1.8rem;margin-bottom:1.5rem}
+    .section h2{font-size:1.15rem;font-weight:700;color:#3b82f6;margin-bottom:1.2rem;display:flex;align-items:center;gap:.5rem}
+    .steps{list-style:none;counter-reset:step}
+    .steps li{counter-increment:step;display:flex;gap:1rem;margin-bottom:1rem;align-items:flex-start}
+    .steps li::before{content:counter(step);background:#1a4f8a;color:#fff;border-radius:50%;width:28px;height:28px;display:flex;align-items:center;justify-content:center;font-size:.82rem;font-weight:700;flex-shrink:0;margin-top:2px}
+    .steps li span{color:#cbd5e1}
+    table{width:100%;border-collapse:collapse;font-size:.88rem;margin-top:.5rem}
+    th{text-align:left;padding:.6rem .9rem;color:#64748b;font-weight:600;border-bottom:1px solid #1e3a5f;background:rgba(30,58,95,.3)}
+    td{padding:.6rem .9rem;border-bottom:1px solid #0f1f35;color:#e2e8f0;vertical-align:top}
+    td code{background:#0f1f35;padding:.1rem .4rem;border-radius:4px;font-size:.82rem;color:#60a5fa}
+    .faq-item{margin-bottom:1.2rem;border-bottom:1px solid #0f1f35;padding-bottom:1.2rem}
+    .faq-item:last-child{border-bottom:none;margin-bottom:0}
+    .faq-q{font-weight:600;color:#e2e8f0;margin-bottom:.4rem;display:flex;gap:.5rem;cursor:pointer;user-select:none}
+    .faq-q::before{content:"▶";font-size:.7rem;color:#3b82f6;transition:transform .2s;display:inline-block;margin-top:3px}
+    .faq-q.open::before{transform:rotate(90deg)}
+    .faq-a{color:#94a3b8;padding-left:1.2rem;display:none}
+    .faq-q.open + .faq-a{display:block}
+    .badge{display:inline-block;padding:.2rem .6rem;border-radius:99px;font-size:.75rem;font-weight:600;margin:2px}
+    .badge-blue{background:rgba(59,130,246,.2);color:#60a5fa}
+    .badge-gray{background:rgba(100,116,139,.2);color:#94a3b8}
+    .highlight{background:rgba(59,130,246,.1);border-left:3px solid #3b82f6;padding:.75rem 1rem;border-radius:0 8px 8px 0;color:#cbd5e1;font-size:.9rem;margin-top:.8rem}
+  </style>
+</head>
+<body>
+<header>
+  <div class="header-left">
+    <img src="static/logo-l4.png" alt="L4 Ativos">
+    <div>
+      <h1>Guia de Uso</h1>
+      <p>L4 Ativos — Manual da Equipe</p>
+    </div>
+  </div>
+  <nav>
+    <a href="/">📋 Gerador</a>
+    <a href="/curadoria">📊 Histórico</a>
+    <a href="/guia">📖 Guia</a>
+  </nav>
+</header>
+
+<div class="container">
+  <div class="page-title">📖 Guia de Uso — Gerador de Documentos</div>
+  <p class="page-sub">Manual rápido para a equipe L4 Ativos. Siga os passos abaixo para gerar os 4 documentos jurídicos de forma correta.</p>
+
+  <!-- PASSO A PASSO -->
+  <div class="section">
+    <h2>🚀 Como gerar documentos</h2>
+    <ol class="steps">
+      <li><span>Acesse a tela principal em <strong>/</strong> (Gerador)</span></li>
+      <li><span>Preencha a seção <strong>Dados do Cedente / Outorgante</strong> com nome, CPF, RG, profissão, estado civil, endereço e data de nascimento.</span></li>
+      <li><span>Preencha <strong>Dados Bancários do Cedente</strong>: banco, agência, conta e, se houver, a chave PIX.</span></li>
+      <li><span>Preencha <strong>Dados do Cessionário</strong> — são campos editáveis e obrigatórios.</span></li>
+      <li><span>Preencha <strong>Dados do Processo</strong>: número, processo de origem, devedor, comarca e vara.</span></li>
+      <li><span>Em <strong>Dados Financeiros</strong>: informe o valor bruto, o valor por extenso, o percentual de honorários (o valor líquido é calculado automaticamente) e também o líquido por extenso.</span></li>
+      <li><span>Verifique os <strong>Advogados Outorgados</strong> — já vêm pré-preenchidos. Se necessário, edite ou clique em "↺ Restaurar advogados padrão".</span></li>
+      <li><span>Preencha as <strong>Datas</strong> do contrato e da negociação.</span></li>
+      <li><span>Escolha o tipo de template: <strong>Padrão</strong> (original) ou <strong>L4 Ativos</strong> (com logo e rodapé).</span></li>
+      <li><span>Clique em <strong>📦 Gerar TODOS os Documentos (.ZIP)</strong> e aguarde o download.</span></li>
+    </ol>
+  </div>
+
+  <!-- CAMPOS OBRIGATÓRIOS -->
+  <div class="section">
+    <h2>📌 Campos obrigatórios e onde aparecem</h2>
+    <table>
+      <thead>
+        <tr><th>Campo</th><th>Variável</th><th>Documentos onde aparece</th></tr>
+      </thead>
+      <tbody>
+        <tr><td>Nome do Cedente</td><td><code>nome_cedente</code></td><td>Todos os 4 documentos</td></tr>
+        <tr><td>CPF do Cedente</td><td><code>cpf_cedente</code></td><td>Todos os 4 documentos</td></tr>
+        <tr><td>RG do Cedente</td><td><code>rg_cedente</code></td><td>Cessão, Procuração, Quitação</td></tr>
+        <tr><td>Data de Nascimento</td><td><code>data_nascimento</code></td><td>Ciência, Quitação</td></tr>
+        <tr><td>Endereço do Cedente</td><td><code>endereco_cedente</code></td><td>Cessão, Procuração, Ciência, Quitação</td></tr>
+        <tr><td>Nome do Cessionário</td><td><code>nome_cessionario</code></td><td>Cessão, Ciência</td></tr>
+        <tr><td>CPF do Cessionário</td><td><code>cpf_cessionario</code></td><td>Cessão, Ciência</td></tr>
+        <tr><td>Número do Processo</td><td><code>numero_processo</code></td><td>Todos os 4 documentos</td></tr>
+        <tr><td>Processo de Origem</td><td><code>numero_processo_origem</code></td><td>Quitação</td></tr>
+        <tr><td>Devedor</td><td><code>devedor</code></td><td>Cessão, Quitação</td></tr>
+        <tr><td>Comarca</td><td><code>comarca</code></td><td>Cessão, Quitação</td></tr>
+        <tr><td>Valor Bruto</td><td><code>valor_bruto</code></td><td>Cessão, Ciência</td></tr>
+        <tr><td>Valor Líquido</td><td><code>valor_liquido</code></td><td>Ciência</td></tr>
+        <tr><td>Banco / Agência / Conta</td><td><code>banco, agencia, conta</code></td><td>Cessão, Ciência</td></tr>
+        <tr><td>PIX</td><td><code>pix</code></td><td>Cessão (tabela bancária)</td></tr>
+        <tr><td>Data do Contrato</td><td><code>data_contrato</code></td><td>Todos os 4 documentos</td></tr>
+        <tr><td>Data da Negociação</td><td><code>data_negociacao</code></td><td>Quitação</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <!-- CAMPOS PRÉ-PREENCHIDOS -->
+  <div class="section">
+    <h2>✅ Campos pré-preenchidos (editáveis)</h2>
+    <table>
+      <thead>
+        <tr><th>Campo</th><th>Valor padrão</th><th>Pode alterar?</th></tr>
+      </thead>
+      <tbody>
+        <tr><td>Devedor</td><td>ESTADO DE GOIÁS</td><td>✅ Sim</td></tr>
+        <tr><td>Banco</td><td>Banco do Brasil</td><td>✅ Sim</td></tr>
+        <tr><td>Comarca</td><td>Goiânia</td><td>✅ Sim</td></tr>
+        <tr><td>UF Comarca</td><td>GO</td><td>✅ Sim</td></tr>
+        <tr><td>Local Assinatura</td><td>Brasília</td><td>✅ Sim</td></tr>
+        <tr><td>Percentual Honorários</td><td>20%</td><td>✅ Sim</td></tr>
+        <tr><td>Vara / Unidade</td><td>Unidade de Processamento Judicial dos Juizados...</td><td>✅ Sim</td></tr>
+        <tr><td>Outorgado 1</td><td>DR. FÁBIO BATISTA BASTOS | OAB 40.115</td><td>✅ Sim</td></tr>
+        <tr><td>Outorgado 2</td><td>DRA. NATANE ALINE DE CARVALHO MONTEIRO | OAB 63.726</td><td>✅ Sim</td></tr>
+        <tr><td>Nacionalidade Cedente</td><td>brasileiro(a)</td><td>✅ Sim</td></tr>
+        <tr><td>Nacionalidade Cessionário</td><td>brasileira</td><td>✅ Sim</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <!-- TIPOS DE TEMPLATE -->
+  <div class="section">
+    <h2>🎨 Diferença entre templates</h2>
+    <table>
+      <thead>
+        <tr><th>Tipo</th><th>Descrição</th><th>Quando usar</th></tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><span class="badge badge-gray">Padrão</span></td>
+          <td>Template original do escritório, sem cabeçalho visual da L4.</td>
+          <td>Uso interno, rascunhos, documentos a serem carimbados manualmente.</td>
+        </tr>
+        <tr>
+          <td><span class="badge badge-blue">L4 Ativos</span></td>
+          <td>Inclui cabeçalho com logo L4 + nome da empresa, rodapé com "L4 Ativos Assessoria | Brasília-DF", fonte Arial padronizada.</td>
+          <td>Documentos finais, envio ao cliente, apresentação formal.</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <!-- FAQ -->
+  <div class="section">
+    <h2>❓ Perguntas Frequentes</h2>
+
+    <div class="faq-item">
+      <div class="faq-q" onclick="toggleFaq(this)">O ZIP não está baixando. O que fazer?</div>
+      <div class="faq-a">
+        Verifique se todos os campos obrigatórios estão preenchidos (campos com borda vermelha indicam erro). Se o formulário estiver correto, verifique se o pop-up de download está bloqueado no navegador — permita downloads para este site. Em caso de erro na geração, uma mensagem de erro em vermelho aparecerá na tela.
+      </div>
+    </div>
+
+    <div class="faq-item">
+      <div class="faq-q" onclick="toggleFaq(this)">Como alterar os advogados padrão?</div>
+      <div class="faq-a">
+        Na seção "👨‍⚖️ Advogados Outorgados", os campos são editáveis. Basta clicar e alterar o valor. Para restaurar os valores originais (Fábio e Natane), clique no botão <strong>↺ Restaurar advogados padrão</strong>. As alterações só valem para a geração atual — na próxima geração, os padrões são carregados novamente.
+      </div>
+    </div>
+
+    <div class="faq-item">
+      <div class="faq-q" onclick="toggleFaq(this)">Onde ver o histórico de documentos gerados?</div>
+      <div class="faq-a">
+        Clique em <strong>📊 Histórico</strong> no menu superior. Será solicitada uma senha de acesso. O histórico mostra data, hora, nome do cedente, processo, tipo de template e operador. Você pode filtrar por data e buscar por nome, além de exportar em CSV.
+      </div>
+    </div>
+
+    <div class="faq-item">
+      <div class="faq-q" onclick="toggleFaq(this)">Campos de valor por extenso: como preencher?</div>
+      <div class="faq-a">
+        Os campos "Valor Bruto por Extenso" e "Valor Líquido por Extenso" devem ser preenchidos manualmente com o valor escrito por extenso em português. Exemplos: <em>"cem mil reais"</em>, <em>"oitenta e dois mil e quinhentos reais"</em>. Esses valores são inseridos diretamente nos documentos conforme digitado.
+      </div>
+    </div>
+
+    <div class="faq-item">
+      <div class="faq-q" onclick="toggleFaq(this)">O cessionário muda a cada operação?</div>
+      <div class="faq-a">
+        Sim. Os dados do cessionário são preenchidos a cada geração. Os campos de cessionário não possuem valor padrão pois variam por negociação. Preencha nome, CPF, RG, profissão, estado civil, endereço e CEP para cada novo processo.
+      </div>
+    </div>
+
+    <div class="faq-item">
+      <div class="faq-q" onclick="toggleFaq(this)">Como usar o template L4 Ativos (com logo)?</div>
+      <div class="faq-a">
+        No final do formulário, em <strong>🎨 Tipo de Template</strong>, selecione "L4 Ativos (com logo e rodapé)". Os documentos gerados terão cabeçalho com o logo da empresa e rodapé padronizado em fonte Arial. Use para documentos finais enviados ao cliente.
+      </div>
+    </div>
+  </div>
+</div>
+
+<footer style="text-align:center;padding:1.5rem;color:#334155;font-size:.8rem;border-top:1px solid #0f1f35">
+  L4 Ativos Assessoria e Consultoria Ltda. · Gerador de Documentos v2.0
+</footer>
+
+<script>
+function toggleFaq(el) {
+  el.classList.toggle("open");
+}
+</script>
+</body>
+</html>

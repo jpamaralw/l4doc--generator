@@ -6,243 +6,381 @@
   <title>L4 Ativos - Gerador de Documentos</title>
   <link rel="icon" href="data:,">
   <link rel="stylesheet" href="static/styles.css">
+  <style>
+    .nav-links { display:flex; gap:1.5rem; align-items:center; }
+    .nav-links a { color:#94a3b8; text-decoration:none; font-size:0.95rem; transition:color .2s; }
+    .nav-links a:hover { color:#3b82f6; }
+    .header { display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:1rem; padding:1.2rem 2rem; background:rgba(15,23,42,0.95); border-bottom:1px solid #1e3a5f; position:sticky;top:0;z-index:100; }
+    .header-left { display:flex; align-items:center; gap:1rem; }
+    .header-left img { height:48px; }
+    .header-left h1 { font-size:1.2rem; margin:0; color:#e2e8f0; }
+    .header-left p { font-size:0.8rem; color:#64748b; margin:0; }
+    .section-title { margin-top:2rem; margin-bottom:1rem; color:#3b82f6; font-weight:700; font-size:1rem; border-bottom:2px solid #1e3a5f; padding-bottom:0.4rem; display:flex; align-items:center; gap:0.5rem; }
+    .form-grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(260px,1fr)); gap:1rem; }
+    .form-group { display:flex; flex-direction:column; gap:0.35rem; }
+    .form-group.full { grid-column:1/-1; }
+    .form-group label { font-size:0.82rem; color:#94a3b8; font-weight:500; }
+    .form-group input, .form-group select, .form-group textarea {
+      background:#0f1f35; border:1px solid #1e3a5f; border-radius:6px;
+      color:#e2e8f0; padding:0.55rem 0.75rem; font-size:0.9rem;
+      transition:border-color .2s, box-shadow .2s;
+    }
+    .form-group input:focus, .form-group select:focus { outline:none; border-color:#3b82f6; box-shadow:0 0 0 2px rgba(59,130,246,.2); }
+    .form-group input.invalid, .form-group select.invalid { border-color:#ef4444 !important; }
+    .info-box { background:rgba(59,130,246,.1); border:1px solid #1e3a5f; border-radius:8px; padding:0.75rem 1rem; font-size:0.88rem; color:#94a3b8; margin-bottom:1.5rem; }
+    .btn-group { display:flex; gap:1rem; flex-wrap:wrap; margin-top:2rem; align-items:center; }
+    .btn { padding:0.7rem 1.5rem; border-radius:8px; font-size:0.95rem; font-weight:600; cursor:pointer; border:none; transition:all .2s; }
+    .btn-primary { background:linear-gradient(135deg,#1a4f8a,#3b82f6); color:#fff; }
+    .btn-primary:hover:not(:disabled) { transform:translateY(-1px); box-shadow:0 4px 15px rgba(59,130,246,.4); }
+    .btn-primary:disabled { opacity:0.6; cursor:not-allowed; }
+    .btn-secondary { background:#1e3a5f; color:#94a3b8; border:1px solid #1e3a5f; }
+    .btn-secondary:hover { background:#243b59; color:#e2e8f0; }
+    .btn-sm { padding:0.4rem 0.9rem; font-size:0.82rem; }
+    .toast { position:fixed; top:1.5rem; right:1.5rem; z-index:9999; padding:1rem 1.5rem; border-radius:10px; font-size:0.95rem; font-weight:500; max-width:380px; box-shadow:0 8px 30px rgba(0,0,0,0.5); opacity:0; transform:translateX(120%); transition:all .35s ease; }
+    .toast.show { opacity:1; transform:translateX(0); }
+    .toast.success { background:#065f46; color:#d1fae5; border:1px solid #10b981; }
+    .toast.error { background:#7f1d1d; color:#fecaca; border:1px solid #ef4444; }
+    .spinner { display:inline-block; width:16px; height:16px; border:2px solid rgba(255,255,255,.3); border-top-color:#fff; border-radius:50%; animation:spin .7s linear infinite; vertical-align:middle; margin-right:6px; }
+    @keyframes spin { to { transform:rotate(360deg); } }
+    .template-toggle { display:flex; gap:1rem; margin-top:0.5rem; }
+    .template-option { display:flex; align-items:center; gap:0.5rem; cursor:pointer; padding:0.6rem 1rem; border-radius:8px; border:1px solid #1e3a5f; transition:all .2s; }
+    .template-option:hover { border-color:#3b82f6; }
+    .template-option input[type=radio] { accent-color:#3b82f6; }
+    .template-option.selected { border-color:#3b82f6; background:rgba(59,130,246,.1); }
+    .lawyer-defaults-btn { margin-bottom:1rem; }
+    .container { max-width:980px; margin:0 auto; padding:2rem 1.5rem; }
+    .card { background:rgba(15,23,42,0.8); border:1px solid #1e3a5f; border-radius:12px; padding:2rem; margin-bottom:1rem; }
+    .page-title { font-size:1.5rem; font-weight:700; color:#e2e8f0; margin-bottom:0.5rem; }
+    select option { background:#0f1f35; }
+    input[type=number] { -moz-appearance:textfield; }
+    input[type=number]::-webkit-outer-spin-button,
+    input[type=number]::-webkit-inner-spin-button { -webkit-appearance:none; }
+  </style>
 </head>
-<body>
-  <div class="bg-animation"></div>
+<body style="background:#060f1e; min-height:100vh; font-family:'Inter',system-ui,sans-serif; color:#e2e8f0;">
 
-  <div class="overlay">
-    <div class="header">
-      <img src="static/logo-l4.png" alt="L4 Ativos" class="logo" />
-      <div class="header-text">
-        <h1>Gerador de Documentos Jurídicos</h1>
-        <p>Automação de contratos e declarações – L4 Ativos</p>
-      </div>
-    </div>
-
-    <div class="container">
-        <div id="fullFormContainer" class="form-container active">
-            <h2 class="form-title">📋 Gerador Completo de Documentos</h2>
-            
-            <div class="info-box">
-                ℹ️ Preencha os dados abaixo UMA VEZ para gerar os 4 documentos automáticos em um arquivo .ZIP
-            </div>
-
-                        <form id="generateAllForm">
-                <div class="section-title">📋 Dados do Cedente / Outorgante</div>
-                <div class="form-grid">
-                    <div class="form-group">
-                        <label>Nome Completo *</label>
-                        <input type="text" name="nome" required>
-                    </div>
-                    <div class="form-group">
-                        <label>CPF *</label>
-                        <input type="text" name="cpf" placeholder="000.000.000-00" required>
-                    </div>
-                    <div class="form-group">
-                        <label>RG *</label>
-                        <input type="text" name="rg" required>
-                    </div>
-                    <div class="form-group">
-                        <label>Nacionalidade *</label>
-                        <input type="text" name="nacionalidade" value="brasileiro(a)" required>
-                    </div>
-                    <div class="form-group">
-                        <label>Profissão *</label>
-                        <input type="text" name="profissao" required>
-                    </div>
-                    <div class="form-group">
-                        <label>Estado Civil *</label>
-                        <select name="estado_civil" required>
-                            <option value="">Selecione...</option>
-                            <option>Solteiro(a)</option>
-                            <option>Casado(a)</option>
-                            <option>Divorciado(a)</option>
-                            <option>Viúvo(a)</option>
-                        </select>
-                    </div>
-                    <div class="form-group full">
-                        <label>Endereço Completo *</label>
-                        <input type="text" name="endereco" required>
-                    </div>
-                    <div class="form-group">
-                        <label>CEP *</label>
-                        <input type="text" name="cep" placeholder="00000-000" required>
-                    </div>
-                    <div class="form-group">
-                        <label>Data de Nascimento *</label>
-                        <input type="date" name="data_nasc" required>
-                    </div>
-                </div>
-
-                <div class="section-title">🏦 Dados Bancários do Cedente</div>
-                <div class="form-grid">
-                    <div class="form-group">
-                        <label>Banco *</label>
-                        <input type="text" name="banco" value="Banco do Brasil" required>
-                    </div>
-                    <div class="form-group">
-                        <label>Agência *</label>
-                        <input type="text" name="agencia" required>
-                    </div>
-                    <div class="form-group">
-                        <label>Conta Corrente *</label>
-                        <input type="text" name="conta" required>
-                    </div>
-                    <div class="form-group">
-                        <label>PIX</label>
-                        <input type="text" name="pix" placeholder="Chave PIX">
-                    </div>
-                </div>
-
-                <div class="section-title">👤 Dados do Cessionário</div>
-                <div class="form-grid">
-                    <div class="form-group">
-                        <label>Nome Completo *</label>
-                        <input type="text" name="nome_cessionario" required>
-                    </div>
-                    <div class="form-group">
-                        <label>Nacionalidade *</label>
-                        <input type="text" name="nacionalidade_cessionario" value="brasileira" required>
-                    </div>
-                    <div class="form-group">
-                        <label>Estado Civil *</label>
-                        <select name="estado_civil_cessionario" required>
-                            <option value="">Selecione...</option>
-                            <option>Solteiro(a)</option>
-                            <option selected>Casado(a)</option>
-                            <option>Divorciado(a)</option>
-                            <option>Viúvo(a)</option>
-                        </select>
-                    </div>
-                    <div class="form-group">
-                        <label>Profissão *</label>
-                        <input type="text" name="profissao_cessionario" required>
-                    </div>
-                    <div class="form-group">
-                        <label>CPF *</label>
-                        <input type="text" name="cpf_cessionario" placeholder="000.000.000-00" required>
-                    </div>
-                    <div class="form-group">
-                        <label>RG *</label>
-                        <input type="text" name="rg_cessionario" required>
-                    </div>
-                    <div class="form-group full">
-                        <label>Endereço Completo *</label>
-                        <input type="text" name="endereco_cessionario" required>
-                    </div>
-                    <div class="form-group">
-                        <label>CEP *</label>
-                        <input type="text" name="cep_cessionario" placeholder="00000-000" required>
-                    </div>
-                </div>
-
-                <div class="section-title">⚖️ Dados do Processo / Negociação</div>
-                <div class="form-grid">
-                    <div class="form-group">
-                        <label>Número do Processo *</label>
-                        <input type="text" name="processo_numero" placeholder="0000000-00.0000.0.00.0000" required>
-                    </div>
-                    <div class="form-group">
-                        <label>Número Processo Origem *</label>
-                        <input type="text" name="processo_origem" required>
-                    </div>
-                    <div class="form-group">
-                        <label>Devedor *</label>
-                        <input type="text" name="processo_devedor" value="ESTADO DE GOIÁS" required>
-                    </div>
-                    <div class="form-group">
-                        <label>Vara / Unidade *</label>
-                        <input type="text" name="unidade_judicial" value="Unidade de Processamento Judicial dos Juizados Especiais da Fazenda Pública" required>
-                    </div>
-                    <div class="form-group">
-                        <label>Comarca *</label>
-                        <input type="text" name="comarca" value="Goiânia" required>
-                    </div>
-                    <div class="form-group">
-                        <label>UF Comarca *</label>
-                        <select name="uf_comarca" required>
-                            <option value="AC">AC</option><option value="AL">AL</option><option value="AP">AP</option><option value="AM">AM</option><option value="BA">BA</option><option value="CE">CE</option><option value="DF">DF</option><option value="ES">ES</option><option value="GO" selected>GO</option><option value="MA">MA</option><option value="MT">MT</option><option value="MS">MS</option><option value="MG">MG</option><option value="PA">PA</option><option value="PB">PB</option><option value="PR">PR</option><option value="PE">PE</option><option value="PI">PI</option><option value="RJ">RJ</option><option value="RN">RN</option><option value="RS">RS</option><option value="RO">RO</option><option value="RR">RR</option><option value="SC">SC</option><option value="SP">SP</option><option value="SE">SE</option><option value="TO">TO</option>
-                        </select>
-                    </div>
-                    <div class="form-group">
-                        <label>Valor Bruto (R$) *</label>
-                        <input type="number" name="processo_valor_bruto" step="0.01" required>
-                    </div>
-                    <div class="form-group">
-                        <label>Valor Bruto por Extenso *</label>
-                        <input type="text" name="valor_bruto_extenso" required>
-                    </div>
-                    <div class="form-group">
-                        <label>Valor Líquido (R$) *</label>
-                        <input type="number" name="processo_valor_liquido" step="0.01" required>
-                    </div>
-                    <div class="form-group">
-                        <label>Valor Líquido por Extenso *</label>
-                        <input type="text" name="valor_liquido_extenso" required>
-                    </div>
-                    <div class="form-group">
-                        <label>Percentual Honorários (%)</label>
-                        <input type="number" name="percentual_honorarios" value="0" step="0.01">
-                    </div>
-                    <div class="form-group">
-                        <label>Local Assinatura *</label>
-                        <input type="text" name="processo_local" value="Brasília-DF" required>
-                    </div>
-                    <div class="form-group">
-                        <label>Data Contrato *</label>
-                        <input type="date" name="processo_data" id="input_data_contrato" required>
-                    </div>
-                    <div class="form-group">
-                        <label>Data Negociação *</label>
-                        <input type="date" name="data_negociacao" id="input_data_negociacao" required>
-                    </div>
-                </div>
-
-                <div class="section-title">👨‍⚖️ Dados dos Outorgados (Advogados)</div>
-                <div class="button-group" style="margin-bottom: 1rem;">
-                    <button type="button" class="btn btn-secondary btn-sm" onclick="resetLawyers()">Usar advogados padrão</button>
-                </div>
-                <div class="form-grid">
-                    <div class="form-group">
-                        <label>Nome Outorgado 1</label>
-                        <input type="text" name="outorgado_nome_1" id="lawyer1_nome">
-                    </div>
-                    <div class="form-group">
-                        <label>OAB Outorgado 1</label>
-                        <input type="text" name="outorgado_oab_1" id="lawyer1_oab">
-                    </div>
-                    <div class="form-group">
-                        <label>Nome Outorgado 2</label>
-                        <input type="text" name="outorgado_nome_2" id="lawyer2_nome">
-                    </div>
-                    <div class="form-group">
-                        <label>OAB Outorgado 2</label>
-                        <input type="text" name="outorgado_oab_2" id="lawyer2_oab">
-                    </div>
-                    <div class="form-group">
-                        <label>CPF Outorgado 2</label>
-                        <input type="text" name="outorgado_cpf_2" id="lawyer2_cpf">
-                    </div>
-                    <input type="hidden" name="outorgado_nacionalidade_1" id="lawyer1_nacionalidade">
-                    <input type="hidden" name="outorgado_estado_civil_1" id="lawyer1_estado_civil">
-                    <input type="hidden" name="outorgado_profissao_1" id="lawyer1_profissao">
-                    <input type="hidden" name="outorgado_nacionalidade_2" id="lawyer2_nacionalidade">
-                    <input type="hidden" name="outorgado_profissao_2" id="lawyer2_profissao">
-                    <input type="hidden" name="advogado_patrono" id="lawyer_patrono">
-                </div>
-
-                <div class="button-group">
-                    <button type="button" class="btn btn-primary" onclick="generateAll()">
-                        📦 Gerar TODOS os Documentos (.ZIP)
-                    </button>
-                    <button type="reset" class="btn btn-secondary">🔄 Limpar</button>
-                </div>
-                <div id="generateMsg" class="message"></div>
-            </form>
-        </div>
+<header class="header">
+  <div class="header-left">
+    <img src="static/logo-l4.png" alt="L4 Ativos">
+    <div>
+      <h1>Gerador de Documentos Jurídicos</h1>
+      <p>L4 Ativos — Automação de contratos e declarações</p>
     </div>
   </div>
+  <nav class="nav-links">
+    <a href="/">📋 Gerador</a>
+    <a href="/curadoria">📊 Histórico</a>
+    <a href="/guia">📖 Guia</a>
+  </nav>
+</header>
 
-  <script src="static/script.js"></script>
+<div class="container">
+  <div class="card">
+    <div class="page-title">📄 Gerador Completo de Documentos</div>
+    <div class="info-box">Preencha os dados abaixo <strong>uma única vez</strong> para gerar os 4 documentos jurídicos em um arquivo .ZIP</div>
+
+    <form id="mainForm" novalidate>
+
+      <!-- ─── CEDENTE ─── -->
+      <div class="section-title">👤 Dados do Cedente / Outorgante</div>
+      <div class="form-grid">
+        <div class="form-group">
+          <label>Nome Completo *</label>
+          <input type="text" id="nome_cedente" name="nome_cedente" required>
+        </div>
+        <div class="form-group">
+          <label>CPF *</label>
+          <input type="text" id="cpf_cedente" name="cpf_cedente" placeholder="000.000.000-00" maxlength="14" required>
+        </div>
+        <div class="form-group">
+          <label>RG *</label>
+          <input type="text" id="rg_cedente" name="rg_cedente" required>
+        </div>
+        <div class="form-group">
+          <label>Nacionalidade *</label>
+          <input type="text" id="nacionalidade_cedente" name="nacionalidade_cedente" value="brasileiro(a)" required>
+        </div>
+        <div class="form-group">
+          <label>Profissão *</label>
+          <input type="text" id="profissao_cedente" name="profissao_cedente" required>
+        </div>
+        <div class="form-group">
+          <label>Estado Civil *</label>
+          <select id="estado_civil_cedente" name="estado_civil_cedente" required>
+            <option value="">Selecione...</option>
+            <option>Solteiro(a)</option>
+            <option>Casado(a)</option>
+            <option>Divorciado(a)</option>
+            <option>Viúvo(a)</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label>Data de Nascimento *</label>
+          <input type="date" id="data_nascimento" name="data_nascimento" required>
+        </div>
+        <div class="form-group full">
+          <label>Endereço Completo *</label>
+          <input type="text" id="endereco_cedente" name="endereco_cedente" required>
+        </div>
+        <div class="form-group">
+          <label>CEP *</label>
+          <input type="text" id="cep_cedente" name="cep_cedente" placeholder="00000-000" maxlength="9" required>
+        </div>
+        <div class="form-group">
+          <label>Cidade</label>
+          <input type="text" id="cidade_cedente" name="cidade_cedente">
+        </div>
+        <div class="form-group">
+          <label>UF</label>
+          <select id="uf_cedente" name="uf_cedente">
+            <option value="">--</option>
+            <option>AC</option><option>AL</option><option>AP</option><option>AM</option><option>BA</option>
+            <option>CE</option><option selected>DF</option><option>ES</option><option>GO</option><option>MA</option>
+            <option>MT</option><option>MS</option><option>MG</option><option>PA</option><option>PB</option>
+            <option>PR</option><option>PE</option><option>PI</option><option>RJ</option><option>RN</option>
+            <option>RS</option><option>RO</option><option>RR</option><option>SC</option><option>SP</option>
+            <option>SE</option><option>TO</option>
+          </select>
+        </div>
+      </div>
+
+      <!-- ─── BANCÁRIO ─── -->
+      <div class="section-title">🏦 Dados Bancários do Cedente</div>
+      <div class="form-grid">
+        <div class="form-group">
+          <label>Banco *</label>
+          <input type="text" id="banco" name="banco" value="Banco do Brasil" required>
+        </div>
+        <div class="form-group">
+          <label>Agência *</label>
+          <input type="text" id="agencia" name="agencia" required>
+        </div>
+        <div class="form-group">
+          <label>Conta Corrente *</label>
+          <input type="text" id="conta" name="conta" required>
+        </div>
+        <div class="form-group">
+          <label>PIX</label>
+          <input type="text" id="pix" name="pix" placeholder="CPF, e-mail, telefone ou chave aleatória">
+        </div>
+      </div>
+
+      <!-- ─── CESSIONÁRIO ─── -->
+      <div class="section-title">🤝 Dados do Cessionário</div>
+      <div class="form-grid">
+        <div class="form-group">
+          <label>Nome Completo *</label>
+          <input type="text" id="nome_cessionario" name="nome_cessionario" required>
+        </div>
+        <div class="form-group">
+          <label>CPF *</label>
+          <input type="text" id="cpf_cessionario" name="cpf_cessionario" placeholder="000.000.000-00" maxlength="14" required>
+        </div>
+        <div class="form-group">
+          <label>RG *</label>
+          <input type="text" id="rg_cessionario" name="rg_cessionario" required>
+        </div>
+        <div class="form-group">
+          <label>Nacionalidade *</label>
+          <input type="text" id="nacionalidade_cessionario" name="nacionalidade_cessionario" value="brasileira" required>
+        </div>
+        <div class="form-group">
+          <label>Profissão *</label>
+          <input type="text" id="profissao_cessionario" name="profissao_cessionario" required>
+        </div>
+        <div class="form-group">
+          <label>Estado Civil *</label>
+          <select id="estado_civil_cessionario" name="estado_civil_cessionario" required>
+            <option value="">Selecione...</option>
+            <option>Solteiro(a)</option>
+            <option selected>Casado(a)</option>
+            <option>Divorciado(a)</option>
+            <option>Viúvo(a)</option>
+          </select>
+        </div>
+        <div class="form-group full">
+          <label>Endereço Completo *</label>
+          <input type="text" id="endereco_cessionario" name="endereco_cessionario" required>
+        </div>
+        <div class="form-group">
+          <label>CEP *</label>
+          <input type="text" id="cep_cessionario" name="cep_cessionario" placeholder="00000-000" maxlength="9" required>
+        </div>
+      </div>
+
+      <!-- ─── PROCESSO ─── -->
+      <div class="section-title">⚖️ Dados do Processo</div>
+      <div class="form-grid">
+        <div class="form-group">
+          <label>Número do Processo *</label>
+          <input type="text" id="numero_processo" name="numero_processo" placeholder="0000000-00.0000.0.00.0000" required>
+        </div>
+        <div class="form-group">
+          <label>Número Processo Origem *</label>
+          <input type="text" id="numero_processo_origem" name="numero_processo_origem" required>
+        </div>
+        <div class="form-group">
+          <label>Devedor *</label>
+          <input type="text" id="devedor" name="devedor" value="ESTADO DE GOIÁS" required>
+        </div>
+        <div class="form-group">
+          <label>UF Comarca *</label>
+          <select id="uf_comarca" name="uf_comarca" required>
+            <option value="AC">AC</option><option value="AL">AL</option><option value="AP">AP</option>
+            <option value="AM">AM</option><option value="BA">BA</option><option value="CE">CE</option>
+            <option value="DF">DF</option><option value="ES">ES</option><option value="GO" selected>GO</option>
+            <option value="MA">MA</option><option value="MT">MT</option><option value="MS">MS</option>
+            <option value="MG">MG</option><option value="PA">PA</option><option value="PB">PB</option>
+            <option value="PR">PR</option><option value="PE">PE</option><option value="PI">PI</option>
+            <option value="RJ">RJ</option><option value="RN">RN</option><option value="RS">RS</option>
+            <option value="RO">RO</option><option value="RR">RR</option><option value="SC">SC</option>
+            <option value="SP">SP</option><option value="SE">SE</option><option value="TO">TO</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label>Comarca *</label>
+          <input type="text" id="comarca" name="comarca" value="Goiânia" required>
+        </div>
+        <div class="form-group full">
+          <label>Vara / Unidade *</label>
+          <input type="text" id="vara_unidade" name="vara_unidade" value="Unidade de Processamento Judicial dos Juizados Especiais da Fazenda Pública" required>
+        </div>
+      </div>
+
+      <!-- ─── FINANCEIRO ─── -->
+      <div class="section-title">💰 Dados Financeiros</div>
+      <div class="form-grid">
+        <div class="form-group">
+          <label>Valor Bruto (R$) *</label>
+          <input type="number" id="valor_bruto" name="valor_bruto" step="0.01" min="0" required>
+        </div>
+        <div class="form-group">
+          <label>Valor Bruto por Extenso *</label>
+          <input type="text" id="valor_bruto_extenso" name="valor_bruto_extenso" placeholder="ex: cem mil reais" required>
+        </div>
+        <div class="form-group">
+          <label>Percentual de Honorários (%)</label>
+          <input type="number" id="percentual_honorarios" name="percentual_honorarios" value="20" step="0.01" min="0" max="100">
+        </div>
+        <div class="form-group">
+          <label>Valor Líquido (R$) *</label>
+          <input type="number" id="valor_liquido" name="valor_liquido" step="0.01" min="0" required>
+        </div>
+        <div class="form-group">
+          <label>Valor Líquido por Extenso *</label>
+          <input type="text" id="valor_liquido_extenso" name="valor_liquido_extenso" placeholder="ex: oitenta mil reais" required>
+        </div>
+      </div>
+
+      <!-- ─── ADVOGADOS ─── -->
+      <div class="section-title">👨‍⚖️ Advogados Outorgados</div>
+      <div class="lawyer-defaults-btn">
+        <button type="button" class="btn btn-secondary btn-sm" onclick="resetLawyers()">↺ Restaurar advogados padrão</button>
+      </div>
+      <div class="form-grid">
+        <div class="form-group">
+          <label>Nome Outorgado 1 *</label>
+          <input type="text" id="outorgado_nome_1" name="outorgado_nome_1" required>
+        </div>
+        <div class="form-group">
+          <label>Nacionalidade</label>
+          <input type="text" id="outorgado_nacionalidade_1" name="outorgado_nacionalidade_1">
+        </div>
+        <div class="form-group">
+          <label>Estado Civil</label>
+          <input type="text" id="outorgado_estado_civil_1" name="outorgado_estado_civil_1">
+        </div>
+        <div class="form-group">
+          <label>Profissão</label>
+          <input type="text" id="outorgado_profissao_1" name="outorgado_profissao_1">
+        </div>
+        <div class="form-group">
+          <label>OAB</label>
+          <input type="text" id="outorgado_oab_1" name="outorgado_oab_1">
+        </div>
+      </div>
+      <div class="form-grid" style="margin-top:0.75rem;">
+        <div class="form-group">
+          <label>Nome Outorgado 2 *</label>
+          <input type="text" id="outorgado_nome_2" name="outorgado_nome_2" required>
+        </div>
+        <div class="form-group">
+          <label>Nacionalidade</label>
+          <input type="text" id="outorgado_nacionalidade_2" name="outorgado_nacionalidade_2">
+        </div>
+        <div class="form-group">
+          <label>Estado Civil</label>
+          <input type="text" id="outorgado_estado_civil_2" name="outorgado_estado_civil_2">
+        </div>
+        <div class="form-group">
+          <label>Profissão</label>
+          <input type="text" id="outorgado_profissao_2" name="outorgado_profissao_2">
+        </div>
+        <div class="form-group">
+          <label>OAB</label>
+          <input type="text" id="outorgado_oab_2" name="outorgado_oab_2">
+        </div>
+        <div class="form-group">
+          <label>CPF Outorgado 2</label>
+          <input type="text" id="outorgado_cpf_2" name="outorgado_cpf_2">
+        </div>
+      </div>
+      <div class="form-grid" style="margin-top:0.75rem;">
+        <div class="form-group">
+          <label>Advogado Patrono do Processo</label>
+          <input type="text" id="nome_advogado" name="nome_advogado" placeholder="Nome do advogado patrono">
+        </div>
+      </div>
+
+      <!-- ─── DATAS ─── -->
+      <div class="section-title">📅 Datas e Local</div>
+      <div class="form-grid">
+        <div class="form-group">
+          <label>Local da Assinatura *</label>
+          <input type="text" id="local" name="local" value="Brasília" required>
+        </div>
+        <div class="form-group">
+          <label>Data do Contrato *</label>
+          <input type="date" id="data_contrato" name="data_contrato" required>
+        </div>
+        <div class="form-group">
+          <label>Data da Negociação *</label>
+          <input type="date" id="data_negociacao" name="data_negociacao" required>
+        </div>
+      </div>
+
+      <!-- ─── TIPO DE TEMPLATE ─── -->
+      <div class="section-title">🎨 Tipo de Template</div>
+      <div class="template-toggle">
+        <label class="template-option selected" id="opt_padrao">
+          <input type="radio" name="template_type" value="padrao" checked onchange="updateTemplateOpt()">
+          <span>📄 Padrão (original)</span>
+        </label>
+        <label class="template-option" id="opt_branded">
+          <input type="radio" name="template_type" value="branded" onchange="updateTemplateOpt()">
+          <span>🏢 L4 Ativos (com logo e rodapé)</span>
+        </label>
+      </div>
+
+      <!-- ─── BOTÕES ─── -->
+      <div class="btn-group">
+        <button type="submit" class="btn btn-primary" id="btnGerar">
+          📦 Gerar TODOS os Documentos (.ZIP)
+        </button>
+        <button type="button" class="btn btn-secondary" onclick="document.getElementById('mainForm').reset(); resetLawyers(); setDefaultDates();">
+          🔄 Limpar Formulário
+        </button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<div id="toast" class="toast"></div>
+
+<footer style="text-align:center; padding:1.5rem; color:#334155; font-size:0.8rem; border-top:1px solid #0f1f35; margin-top:1rem;">
+  L4 Ativos Assessoria e Consultoria Ltda. · Gerador de Documentos v2.0
+</footer>
+
+<script src="static/script.js"></script>
 </body>
 </html>

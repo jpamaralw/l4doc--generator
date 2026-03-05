@@ -1,0 +1,224 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>L4 Ativos - Histórico de Gerações</title>
+  <link rel="icon" href="data:,">
+  <style>
+    *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+    body{background:#060f1e;min-height:100vh;font-family:'Inter',system-ui,sans-serif;color:#e2e8f0}
+    header{display:flex;justify-content:space-between;align-items:center;padding:1.2rem 2rem;background:rgba(15,23,42,.95);border-bottom:1px solid #1e3a5f;position:sticky;top:0;z-index:100;flex-wrap:wrap;gap:1rem}
+    .header-left{display:flex;align-items:center;gap:1rem}
+    .header-left img{height:48px}
+    .header-left h1{font-size:1.2rem;margin:0;color:#e2e8f0}
+    .header-left p{font-size:.8rem;color:#64748b;margin:0}
+    nav a{color:#94a3b8;text-decoration:none;font-size:.95rem;margin-left:1.5rem;transition:color .2s}
+    nav a:hover{color:#3b82f6}
+    .container{max-width:1100px;margin:0 auto;padding:2rem 1.5rem}
+    .stats-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:1rem;margin-bottom:2rem}
+    .stat-card{background:rgba(15,23,42,.8);border:1px solid #1e3a5f;border-radius:12px;padding:1.5rem;text-align:center}
+    .stat-card .val{font-size:2.2rem;font-weight:700;color:#3b82f6}
+    .stat-card .lbl{font-size:.85rem;color:#64748b;margin-top:.3rem}
+    .card{background:rgba(15,23,42,.8);border:1px solid #1e3a5f;border-radius:12px;padding:1.5rem;margin-bottom:1.5rem}
+    .card-title{font-size:1.1rem;font-weight:600;color:#e2e8f0;margin-bottom:1rem;display:flex;align-items:center;gap:.5rem}
+    .filters{display:flex;gap:1rem;flex-wrap:wrap;align-items:flex-end;margin-bottom:1.2rem}
+    .filter-group{display:flex;flex-direction:column;gap:.3rem}
+    .filter-group label{font-size:.8rem;color:#94a3b8}
+    .filter-group input,.filter-group select{background:#0f1f35;border:1px solid #1e3a5f;border-radius:6px;color:#e2e8f0;padding:.5rem .75rem;font-size:.88rem}
+    .filter-group input:focus,.filter-group select:focus{outline:none;border-color:#3b82f6}
+    .btn{padding:.55rem 1.2rem;border-radius:8px;font-size:.88rem;font-weight:600;cursor:pointer;border:none;transition:all .2s}
+    .btn-primary{background:linear-gradient(135deg,#1a4f8a,#3b82f6);color:#fff}
+    .btn-primary:hover{transform:translateY(-1px);box-shadow:0 4px 12px rgba(59,130,246,.4)}
+    .btn-secondary{background:#1e3a5f;color:#94a3b8}
+    .btn-secondary:hover{background:#243b59;color:#e2e8f0}
+    table{width:100%;border-collapse:collapse;font-size:.88rem}
+    th{text-align:left;padding:.7rem 1rem;color:#64748b;font-weight:600;border-bottom:1px solid #1e3a5f;white-space:nowrap}
+    td{padding:.7rem 1rem;border-bottom:1px solid #0f1f35;color:#e2e8f0;vertical-align:middle}
+    tr:hover td{background:rgba(59,130,246,.05)}
+    .badge{display:inline-block;padding:.2rem .6rem;border-radius:99px;font-size:.75rem;font-weight:600}
+    .badge-padrao{background:rgba(100,116,139,.2);color:#94a3b8}
+    .badge-branded{background:rgba(59,130,246,.2);color:#60a5fa}
+    .empty{text-align:center;color:#64748b;padding:3rem;font-size:.95rem}
+    .page-title{font-size:1.5rem;font-weight:700;color:#e2e8f0;margin-bottom:1.5rem}
+  </style>
+</head>
+<body>
+<header>
+  <div class="header-left">
+    <img src="static/logo-l4.png" alt="L4 Ativos">
+    <div>
+      <h1>Histórico de Gerações</h1>
+      <p>L4 Ativos — Curadoria de Documentos</p>
+    </div>
+  </div>
+  <nav>
+    <a href="/">📋 Gerador</a>
+    <a href="/curadoria">📊 Histórico</a>
+    <a href="/guia">📖 Guia</a>
+  </nav>
+</header>
+
+<div class="container">
+  <div class="stats-grid" id="statsGrid">
+    <div class="stat-card"><div class="val" id="statTotal">–</div><div class="lbl">Total Gerado</div></div>
+    <div class="stat-card"><div class="val" id="statHoje">–</div><div class="lbl">Gerado Hoje</div></div>
+    <div class="stat-card"><div class="val" id="statCedentes">–</div><div class="lbl">Cedentes Únicos</div></div>
+  </div>
+
+  <div class="card">
+    <div class="card-title">📋 Registros</div>
+    <div class="filters">
+      <div class="filter-group">
+        <label>De</label>
+        <input type="date" id="filtDe">
+      </div>
+      <div class="filter-group">
+        <label>Até</label>
+        <input type="date" id="filtAte">
+      </div>
+      <div class="filter-group">
+        <label>Buscar cedente</label>
+        <input type="text" id="filtBusca" placeholder="Nome do cedente...">
+      </div>
+      <button class="btn btn-primary" onclick="applyFilter()">🔍 Filtrar</button>
+      <button class="btn btn-secondary" onclick="clearFilter()">✕ Limpar</button>
+      <button class="btn btn-secondary" onclick="exportCSV()">📥 Exportar CSV</button>
+    </div>
+
+    <div style="overflow-x:auto">
+      <table id="histTable">
+        <thead>
+          <tr>
+            <th>Data</th>
+            <th>Hora</th>
+            <th>Cedente</th>
+            <th>Processo</th>
+            <th>Template</th>
+            <th>Operador</th>
+          </tr>
+        </thead>
+        <tbody id="histBody">
+          <tr><td colspan="6" class="empty">Carregando...</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
+<footer style="text-align:center;padding:1.5rem;color:#334155;font-size:.8rem;border-top:1px solid #0f1f35">
+  L4 Ativos Assessoria e Consultoria Ltda. · Gerador de Documentos v2.0
+</footer>
+
+<script>
+  const SENHA = "l4admin2026";
+
+  (function checkAuth() {
+    const stored = sessionStorage.getItem("l4_auth");
+    if (stored === SENHA) return;
+    const input = prompt("🔒 Acesso restrito. Digite a senha:");
+    if (input === SENHA) {
+      sessionStorage.setItem("l4_auth", SENHA);
+    } else {
+      alert("Senha incorreta. Redirecionando...");
+      window.location.href = "/";
+    }
+  })();
+
+  let allRows = [];
+
+  async function loadStats() {
+    try {
+      const res = await fetch("/api/historico/stats");
+      const s = await res.json();
+      document.getElementById("statTotal").textContent = s.total ?? 0;
+      document.getElementById("statHoje").textContent = s.hoje ?? 0;
+      document.getElementById("statCedentes").textContent = s.cedentes_unicos ?? 0;
+    } catch {}
+  }
+
+  async function loadHistorico() {
+    try {
+      const res = await fetch("/api/historico");
+      allRows = await res.json();
+      renderTable(allRows);
+    } catch {
+      document.getElementById("histBody").innerHTML = '<tr><td colspan="6" class="empty">Erro ao carregar dados.</td></tr>';
+    }
+  }
+
+  function renderTable(rows) {
+    const tbody = document.getElementById("histBody");
+    if (!rows.length) {
+      tbody.innerHTML = '<tr><td colspan="6" class="empty">Nenhum registro encontrado.</td></tr>';
+      return;
+    }
+    tbody.innerHTML = rows.map(r => {
+      const date = r.data_geracao ? r.data_geracao.split("T")[0].split("-").reverse().join("/") : "–";
+      const hora = r.hora_geracao || "–";
+      const badge = r.template_type === "branded"
+        ? '<span class="badge badge-branded">L4 Branded</span>'
+        : '<span class="badge badge-padrao">Padrão</span>';
+      return `<tr>
+        <td>${date}</td>
+        <td>${hora}</td>
+        <td>${r.cedente_nome || "–"}</td>
+        <td style="font-family:monospace;font-size:.82rem">${r.numero_processo || "–"}</td>
+        <td>${badge}</td>
+        <td>${r.usuario || "operador"}</td>
+      </tr>`;
+    }).join("");
+  }
+
+  function applyFilter() {
+    const de = document.getElementById("filtDe").value;
+    const ate = document.getElementById("filtAte").value;
+    const busca = document.getElementById("filtBusca").value.toLowerCase();
+    let filtered = allRows;
+    if (de) filtered = filtered.filter(r => r.data_geracao && r.data_geracao >= de);
+    if (ate) filtered = filtered.filter(r => r.data_geracao && r.data_geracao.split("T")[0] <= ate);
+    if (busca) filtered = filtered.filter(r => (r.cedente_nome || "").toLowerCase().includes(busca));
+    renderTable(filtered);
+  }
+
+  function clearFilter() {
+    document.getElementById("filtDe").value = "";
+    document.getElementById("filtAte").value = "";
+    document.getElementById("filtBusca").value = "";
+    renderTable(allRows);
+  }
+
+  function exportCSV() {
+    const de = document.getElementById("filtDe").value;
+    const ate = document.getElementById("filtAte").value;
+    const busca = document.getElementById("filtBusca").value.toLowerCase();
+    let rows = allRows;
+    if (de) rows = rows.filter(r => r.data_geracao && r.data_geracao >= de);
+    if (ate) rows = rows.filter(r => r.data_geracao && r.data_geracao.split("T")[0] <= ate);
+    if (busca) rows = rows.filter(r => (r.cedente_nome || "").toLowerCase().includes(busca));
+
+    const headers = ["Data","Hora","Cedente","Processo","Template","Operador"];
+    const csvRows = rows.map(r => {
+      const date = r.data_geracao ? r.data_geracao.split("T")[0].split("-").reverse().join("/") : "";
+      return [date, r.hora_geracao||"", r.cedente_nome||"", r.numero_processo||"", r.template_type||"", r.usuario||""].map(v => `"${v}"`).join(",");
+    });
+    const csv = [headers.join(","), ...csvRows].join("\n");
+    const blob = new Blob(["\uFEFF"+csv], {type:"text/csv;charset=utf-8;"});
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = `historico_l4_${new Date().toISOString().split("T")[0]}.csv`;
+    a.click();
+    URL.revokeObjectURL(url);
+  }
+
+  document.addEventListener("DOMContentLoaded", () => {
+    loadStats();
+    loadHistorico();
+    document.getElementById("filtBusca").addEventListener("input", applyFilter);
+    document.getElementById("filtDe").addEventListener("change", applyFilter);
+    document.getElementById("filtAte").addEventListener("change", applyFilter);
+  });
+</script>
+</body>
+</html>
