@@ -175,15 +175,24 @@ class AllDocumentsPayload(BaseModel):
     processo_numero: str
     processo_devedor: str = "ESTADO DE GOIÁS"
     processo_valor_bruto: float
+    valor_bruto_extenso: str = ""
+    percentual_honorarios: float = 0.0
     processo_valor_liquido: float
+    valor_liquido_extenso: str = ""
     processo_local: str = "Brasília-DF"
-    processo_data: str  # Ex: 09 de Dezembro de 2025
+    processo_data: str  # DD/MM/AAAA
+    data_negociacao: str # DD/MM/AAAA
+    
+    # Localização / Comarca
+    comarca: str = "Goiânia"
+    uf_comarca: str = "GO"
     
     # Dados Bancários / Outros
     advogado_patrono: str
     banco: str = "Banco do Brasil"
     agencia: str
     conta: str
+    pix: str = ""
     
     # Outorgados (Procuração)
     outorgado_nome_1: str = "DR. FÁBIO BATISTA BASTOS"
@@ -199,13 +208,8 @@ class AllDocumentsPayload(BaseModel):
     outorgado_cpf_2: str = "115.617.116-40"
 
     # Declaração Quitação
-    data_negociacao: str
-    estado_devedor: str = "ESTADO DE GOIÁS"
     unidade_judicial: str = "Unidade de Processamento Judicial dos Juizados Especiais da Fazenda Pública"
-    comarca: str = "Goiânia"
     processo_origem: str
-
-# ==== ENDPOINTS ==== #
 
 @app.post("/api/generate-all")
 async def generate_all(payload: AllDocumentsPayload):
@@ -214,110 +218,82 @@ async def generate_all(payload: AllDocumentsPayload):
         data_hoje = datetime.now().strftime("%Y%m%d")
         zip_filename = f"Documentos_{nome_limpo}_{data_hoje}.zip"
         
-        # Buffer para o ZIP
         zip_buffer = io.BytesIO()
         
-        # Contexto unificado para todos os templates
+        # Contexto unificado com fallbacks
         full_context = {
-            # Cedente
-            "nome_cedente": payload.nome,
-            "cpf_cedente": payload.cpf,
-            "rg_cedente": payload.rg,
-            "nacionalidade_cedente": payload.nacionalidade,
-            "profissao_cedente": payload.profissao,
-            "estado_civil_cedente": payload.estado_civil,
-            "endereco_cedente": payload.endereco,
-            "cep_cedente": payload.cep,
-            "data_nascimento": payload.data_nasc,
+            "nome_cedente": payload.nome or "",
+            "cpf_cedente": payload.cpf or "",
+            "rg_cedente": payload.rg or "",
+            "nacionalidade_cedente": payload.nacionalidade or "",
+            "profissao_cedente": payload.profissao or "",
+            "estado_civil_cedente": payload.estado_civil or "",
+            "endereco_cedente": payload.endereco or "",
+            "cep_cedente": payload.cep or "",
+            "data_nascimento": payload.data_nasc or "",
             
-            # Cessionário
-            "nome_cessionario": payload.nome_cessionario,
-            "nacionalidade_cessionario": payload.nacionalidade_cessionario,
-            "estado_civil_cessionario": payload.estado_civil_cessionario,
-            "profissao_cessionario": payload.profissao_cessionario,
-            "cpf_cessionario": payload.cpf_cessionario,
-            "rg_cessionario": payload.rg_cessionario,
-            "endereco_cessionario": payload.endereco_cessionario,
-            "cep_cessionario": payload.cep_cessionario,
+            "nome_cessionario": payload.nome_cessionario or "",
+            "nacionalidade_cessionario": payload.nacionalidade_cessionario or "",
+            "estado_civil_cessionario": payload.estado_civil_cessionario or "",
+            "profissao_cessionario": payload.profissao_cessionario or "",
+            "cpf_cessionario": payload.cpf_cessionario or "",
+            "rg_cessionario": payload.rg_cessionario or "",
+            "endereco_cessionario": payload.endereco_cessionario or "",
+            "cep_cessionario": payload.cep_cessionario or "",
             
-            # Processo
-            "numero_processo": payload.processo_numero,
-            "devedor": payload.processo_devedor,
+            "numero_processo": payload.processo_numero or "",
+            "numero_processo_origem": payload.processo_origem or "",
+            "devedor": payload.processo_devedor or "",
+            "vara_unidade": payload.unidade_judicial or "",
+            "comarca": payload.comarca or "",
+            "uf_comarca": payload.uf_comarca or "",
+            
             "valor_bruto": format_currency(payload.processo_valor_bruto),
+            "valor_bruto_extenso": payload.valor_bruto_extenso or "",
+            "percentual_honorarios": f"{payload.percentual_honorarios}%",
             "valor_liquido": format_currency(payload.processo_valor_liquido),
-            "local": payload.processo_local,
-            "data_contrato": payload.processo_data,
-            "data_negociacao": payload.data_negociacao,
-            "vara_unidade": payload.unidade_judicial,
-            "comarca": payload.comarca,
-            "numero_processo_origem": payload.processo_origem,
+            "valor_liquido_extenso": payload.valor_liquido_extenso or "",
             
-            # Bancários / Advogado
-            "nome_advogado": payload.advogado_patrono,
-            "agencia": payload.agencia,
-            "conta": payload.conta,
-            "banco": payload.banco,
+            "nome_advogado": payload.advogado_patrono or "",
+            "agencia": payload.agencia or "",
+            "conta": payload.conta or "",
+            "banco": payload.banco or "",
+            "pix": payload.pix or "",
             
-            # Outorgados
-            "outorgado_nome_1": payload.outorgado_nome_1,
-            "outorgado_nacionalidade_1": payload.outorgado_nacionalidade_1,
-            "outorgado_estado_civil_1": payload.outorgado_estado_civil_1,
-            "outorgado_profissao_1": payload.outorgado_profissao_1,
-            "outorgado_oab_1": payload.outorgado_oab_1,
-            "outorgado_nome_2": payload.outorgado_nome_2,
-            "outorgado_nacionalidade_2": payload.outorgado_nacionalidade_2,
-            "outorgado_profissao_2": payload.outorgado_profissao_2,
-            "outorgado_oab_2": payload.outorgado_oab_2,
-            "outorgado_cpf_2": payload.outorgado_cpf_2,
+            "outorgado_nome_1": payload.outorgado_nome_1 or "",
+            "outorgado_nacionalidade_1": payload.outorgado_nacionalidade_1 or "",
+            "outorgado_estado_civil_1": payload.outorgado_estado_civil_1 or "",
+            "outorgado_profissao_1": payload.outorgado_profissao_1 or "",
+            "outorgado_oab_1": payload.outorgado_oab_1 or "",
+            "outorgado_nome_2": payload.outorgado_nome_2 or "",
+            "outorgado_nacionalidade_2": payload.outorgado_nacionalidade_2 or "",
+            "outorgado_profissao_2": payload.outorgado_profissao_2 or "",
+            "outorgado_oab_2": payload.outorgado_oab_2 or "",
+            "outorgado_cpf_2": payload.outorgado_cpf_2 or "",
+            
+            "data_contrato": payload.processo_data or "",
+            "data_negociacao": payload.data_negociacao or "",
+            "local": payload.processo_local or "",
         }
 
         with zipfile.ZipFile(zip_buffer, "a", zipfile.ZIP_DEFLATED, False) as zip_file:
-            # 1. Contrato
-            template_contrato = "templates/template-cessao-rpv.docx"
-            doc_contrato = DocxTemplate(template_contrato)
-            doc_contrato.render(full_context)
-            buf_contrato = io.BytesIO()
-            doc_contrato.save(buf_contrato)
-            zip_file.writestr(f"1_Contrato_Cessao_{nome_limpo}.docx", buf_contrato.getvalue())
-
-            # 2. Procuração
-            template_proc = "templates/template-procuracao-adjudicia.docx"
-            doc_proc = DocxTemplate(template_proc)
-            doc_proc.render(full_context)
-            buf_proc = io.BytesIO()
-            doc_proc.save(buf_proc)
-            zip_file.writestr(f"2_Procuracao_{nome_limpo}.docx", buf_proc.getvalue())
-
-            # 3. Ciência
-            template_ciencia = "templates/template-dec-ciencia-concord.docx"
-            doc_ciencia = DocxTemplate(template_ciencia)
-            doc_ciencia.render(full_context)
-            buf_ciencia = io.BytesIO()
-            doc_ciencia.save(buf_ciencia)
-            zip_file.writestr(f"3_Declaracao_Ciencia_{nome_limpo}.docx", buf_ciencia.getvalue())
-
-            # 4. Quitação
-            template_quit = "templates/template-dec-quitacao.docx"
-            doc_quit = DocxTemplate(template_quit)
-            doc_quit.render(full_context)
-            buf_quit = io.BytesIO()
-            doc_quit.save(buf_quit)
-            zip_file.writestr(f"4_Declaracao_Quitacao_{nome_limpo}.docx", buf_quit.getvalue())
+            templates_to_gen = [
+                ("templates/template-cessao-rpv.docx", f"1_Contrato_Cessao_{nome_limpo}.docx"),
+                ("templates/template-procuracao-adjudicia.docx", f"2_Procuracao_{nome_limpo}.docx"),
+                ("templates/template-dec-ciencia-concord.docx", f"3_Declaracao_Ciencia_{nome_limpo}.docx"),
+                ("templates/template-dec-quitacao.docx", f"4_Declaracao_Quitacao_{nome_limpo}.docx"),
+            ]
+            for t_path, out_name in templates_to_gen:
+                if os.path.exists(t_path):
+                    doc = DocxTemplate(t_path)
+                    doc.render(full_context)
+                    buf = io.BytesIO()
+                    doc.save(buf)
+                    zip_file.writestr(out_name, buf.getvalue())
 
         zip_buffer.seek(0)
-        
-        save_document(
-            tipo="geracao_completa_zip",
-            nome_principal=payload.nome,
-            payload_dict=payload.dict(),
-            arquivo_path=f"memory://{zip_filename}",
-        )
-
-        return StreamingResponse(
-            zip_buffer,
-            media_type="application/x-zip-compressed",
-            headers={"Content-Disposition": f"attachment; filename={zip_filename}"}
-        )
+        save_document(tipo="geracao_completa_zip", nome_principal=payload.nome, payload_dict=payload.dict(), arquivo_path=f"memory://{zip_filename}")
+        return StreamingResponse(zip_buffer, media_type="application/x-zip-compressed", headers={"Content-Disposition": f"attachment; filename={zip_filename}"})
     except Exception as e:
         import traceback
         print(traceback.format_exc())
