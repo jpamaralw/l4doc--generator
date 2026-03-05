@@ -1,0 +1,282 @@
+Você tem acesso ao projeto L4 Ativos com FastAPI (backend) + HTML/CSS/JS (frontend).
+Preciso que você execute TUDO abaixo em sequência, fazendo commit ao final.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+PARTE 1 — CORRIGIR OS 4 TEMPLATES .DOCX
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Crie e execute um script fix_templates.py.
+REGRA CRÍTICA: use python-docx, preserve bold/underline/italic dos runs,
+NUNCA delete parágrafos, apenas substitua .text dos runs.
+
+─── TEMPLATE 1: template-cessao-rpv.docx ───
+
+Correções necessárias:
+1) Cabeçalho: "Devedor: Devedor:" → "Devedor:"
+2) Bloco CESSIONÁRIO hardcoded — substituir:
+   "LEDA MARIA SOARES JANOT, brasileira, advogada, casada, portadora do
+   CPF: 021.159.805-49 e RG nº 483293 SSP BA, residente a SMPW Q8
+   conjunto 3, casa 1, Park way, Brasília/DF, CEP: 71740-803"
+   →
+   "{{nome_cessionario}}, {{nacionalidade_cessionario}},
+   {{profissao_cessionario}}, {{estado_civil_cessionario}}, portadora
+   do CPF: {{cpf_cessionario}} e RG nº {{rg_cessionario}}, residente
+   a {{endereco_cessionario}}, CEP: {{cep_cessionario}}"
+
+3) Cláusula 1.1: "Tribunal de Justiça de {{uf_comarca}} - Comarca de {{comarca}}"
+   Confirmar que {{uf_comarca}} e {{comarca}} estão como variáveis (não hardcoded).
+
+4) Na tabela bancária: linha PIX com valor {{pix}} — se estiver vazia ou sem
+   variável, adicionar {{pix}} na célula correspondente.
+
+5) Cláusula 1.3: trocar número hardcoded "5314729-14.2025.8.09.0051"
+   → {{numero_processo}}
+
+6) Rodapé de assinaturas: confirmar que
+   {{nome_cedente}} / CEDENTE e {{nome_cessionario}} / CESSIONÁRIO
+   estão como variáveis (não hardcoded).
+
+7) Data final "– DF, {{data_contrato}}" — confirmar variável presente.
+
+─── TEMPLATE 2: template-procuracao-adjudicia.docx ───
+
+1) OUTORGANTE — substituir [campos] por variáveis:
+   [Nome]          → {{nome_cedente}}
+   [Nacionalidade] → {{nacionalidade_cedente}}
+   [Estado Civil]  → {{estado_civil_cedente}}
+   [Profissão]     → {{profissao_cedente}}
+   [RG]            → {{rg_cedente}}
+   [CPF]           → {{cpf_cedente}}
+   [Data Nasc]     → {{data_nascimento}}
+   [Endereço]      → {{endereco_cedente}}
+   [CEP]           → {{cep_cedente}}
+
+2) OUTORGADO — manter o texto dos advogados MAS transformar em variáveis:
+   "DR. FÁBIO BATISTA BASTOS"            → {{outorgado_nome_1}}
+   "brasileiro, solteiro, advogado"       → {{outorgado_nacionalidade_1}}, {{outorgado_estado_civil_1}}, {{outorgado_profissao_1}}
+   "sob o nº 40.115"                     → "sob o nº {{outorgado_oab_1}}"
+   "DRA. NATANE ALINE DE CARVALHO MONTEIRO" → {{outorgado_nome_2}}
+   "brasileira, advogada"                → {{outorgado_nacionalidade_2}}, {{outorgado_profissao_2}}
+   "OAB/DF nº 63.726"                   → "OAB/DF nº {{outorgado_oab_2}}"
+   "CPF n°115.617.116-40"               → "CPF nº {{outorgado_cpf_2}}"
+
+3) Corpo: [Número Processo] → {{numero_processo}}
+
+4) Data final: [Data] → {{data_contrato}}
+
+5) Assinatura final:
+   [Nome] → {{nome_cedente}}
+   [CPF]  → {{cpf_cedente}}
+
+─── TEMPLATE 3: template-dec-ciencia&concord.docx ───
+
+1) Bloco CEDENTE (1ª ocorrência de cada campo):
+   [Nome]          → {{nome_cedente}}
+   [nacionalidade] → {{nacionalidade_cedente}}
+   [Profissão]     → {{profissao_cedente}}
+   [Estado Civil]  → {{estado_civil_cedente}}
+   [RG]            → {{rg_cedente}}
+   [CPF]           → {{cpf_cedente}}
+   [Data]          → {{data_nascimento}}   (após "nascida em")
+   [Endereço]      → {{endereco_cedente}}
+   [CEP]           → {{cep_cedente}}
+
+2) Bloco CESSIONÁRIO (2ª ocorrência):
+   [Nome]          → {{nome_cessionario}}
+   [Profissão]     → {{profissao_cessionario}}
+   [Estado Civil]  → {{estado_civil_cessionario}}
+   [CPF]           → {{cpf_cessionario}}
+   [RG]            → {{rg_cessionario}}
+   [Endereço]      → {{endereco_cessionario}}
+   [CEP]           → {{cep_cessionario}}
+
+3) Campos únicos:
+   [Número]        → {{numero_processo}}
+   [Valor] (1ª)    → {{valor_bruto}}
+   [Valor] (2ª)    → {{valor_liquido}}
+   [Nome Advogado] → {{nome_advogado}}
+   [Agência]       → {{agencia}}
+   [Conta]         → {{conta}}
+   [Banco]         → {{banco}}
+
+4) Assinatura final:
+   [Nome Cedente]  → {{nome_cedente}}
+   [CPF]           → {{cpf_cedente}}
+   [Data]          → {{data_contrato}}
+
+─── TEMPLATE 4: template-dec-quitação.docx ───
+
+   [Nome] (1ª)                  → {{nome_cedente}}
+   [Nacionalidade]              → {{nacionalidade_cedente}}
+   [Estado Civil]               → {{estado_civil_cedente}}
+   [Profissão]                  → {{profissao_cedente}}
+   [RG]                         → {{rg_cedente}}
+   [CPF]                        → {{cpf_cedente}}
+   [Data] (após "nascido em")   → {{data_nascimento}}
+   [Endereço]                   → {{endereco_cedente}}
+   [CEP]                        → {{cep_cedente}}
+   [DD/MM/AAAA]                 → {{data_negociacao}}
+   [Número Processo]            → {{numero_processo}}
+   [Vara/Unidade]               → {{vara_unidade}}
+   [Comarca]                    → {{comarca}}
+   [Nome] (2ª ocorrência)       → {{nome_cedente}}
+   [Número Processo Origem]     → {{numero_processo_origem}}
+   [Local]                      → {{local}}
+   [Data] (última linha)        → {{data_contrato}}
+
+Após rodar o script: abra cada arquivo salvo e faça scan de qualquer [
+ou ] restante — liste o que encontrar. Corrija se houver.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+PARTE 2 — AJUSTES NO BACKEND (app.py)
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+No endpoint de geração de documentos, garantir que o context do docxtpl
+inclui TODAS as variáveis abaixo (lidas do JSON recebido):
+
+Cedente: nome_cedente, nacionalidade_cedente, profissao_cedente,
+estado_civil_cedente, rg_cedente, cpf_cedente, data_nascimento,
+endereco_cedente, cep_cedente
+
+Cessionário: nome_cessionario, nacionalidade_cessionario,
+profissao_cessionario, estado_civil_cessionario, cpf_cessionario,
+rg_cessionario, endereco_cessionario, cep_cessionario
+
+Bancários: banco, agencia, conta, pix
+
+Processo: numero_processo, numero_processo_origem, devedor,
+vara_unidade, comarca, uf_comarca
+
+Financeiro: valor_bruto, valor_bruto_extenso, percentual_honorarios,
+valor_liquido, valor_liquido_extenso
+
+Advogados: nome_advogado, outorgado_nome_1, outorgado_nacionalidade_1,
+outorgado_estado_civil_1, outorgado_profissao_1, outorgado_oab_1,
+outorgado_nome_2, outorgado_nacionalidade_2, outorgado_profissao_2,
+outorgado_oab_2, outorgado_cpf_2
+
+Datas: data_contrato, data_negociacao, local
+
+Se algum campo vier vazio/null, use string vazia "" como fallback
+(não deixar quebrar o render).
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+PARTE 3 — AJUSTES NO FORMULÁRIO (frontend)
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+3.1) SEPARAR seções no formulário (manter ordem visual):
+  - "DADOS DO CEDENTE / OUTORGANTE" → só dados pessoais do cedente
+  - "DADOS BANCÁRIOS DO CEDENTE" → seção separada:
+    Banco, Agência, Conta Corrente, PIX (ADICIONAR CAMPO PIX que está faltando)
+  - "DADOS DO CESSIONÁRIO" → campos editáveis do cessionário
+
+3.2) SEÇÃO DOS ADVOGADOS OUTORGADOS:
+  - Criar seção "DADOS DOS OUTORGADOS (Advogados)"
+  - Outorgado 1: pré-preencher com:
+    Nome: "DR. FÁBIO BATISTA BASTOS"
+    Nacionalidade: "brasileiro"
+    Estado Civil: "solteiro"
+    Profissão: "advogado"
+    OAB: "40.115"
+  - Outorgado 2: pré-preencher com:
+    Nome: "DRA. NATANE ALINE DE CARVALHO MONTEIRO"
+    Nacionalidade: "brasileira"
+    Profissão: "advogada"
+    OAB: "63.726"
+    CPF: "115.617.116-40"
+  - Campos EDITÁVEIS — usuário pode alterar se necessário
+  - Adicionar botão/toggle "Usar advogados padrão" que restaura os valores acima
+
+3.3) CAMPOS FALTANTES — adicionar ao formulário:
+  - PIX (seção bancária)
+  - UF Comarca (dropdown com estados brasileiros, na seção do processo)
+  - Valor bruto por extenso (texto livre)
+  - Percentual de honorários (%)
+  - Valor líquido por extenso (texto livre)
+  - Local da negociação (cidade)
+  - Data do contrato (date picker, padrão = hoje)
+  - Data da negociação (date picker)
+
+3.4) DATAS — formatar automaticamente:
+  Ao enviar para o backend, converter todas as datas do formato
+  YYYY-MM-DD (input type=date) para DD/MM/AAAA antes de montar o JSON.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+PARTE 4 — TELA DE CURADORIA / HISTÓRICO
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+4.1) Backend — criar tabela no SQLite (l4docs.db) chamada "historico":
+  - id (autoincrement)
+  - usuario (text) — quem gerou (por ora: campo livre ou fixo "operador")
+  - cedente_nome (text)
+  - documentos_gerados (text) — ex: "cessao,procuracao,ciencia,quitacao"
+  - numero_processo (text)
+  - data_geracao (datetime, default = now())
+  - hora_geracao (text)
+  - ip_origem (text, opcional)
+
+  Ao gerar documentos, salvar um registro nessa tabela automaticamente.
+
+4.2) Backend — criar endpoints:
+  GET /api/historico → retorna todos os registros (ordenado por data desc)
+  GET /api/historico/stats → retorna:
+    - total de documentos gerados (all time)
+    - total de gerações hoje
+    - total de cedentes únicos
+    - documentos por dia (últimos 7 dias)
+
+4.3) Frontend — criar página /curadoria.html (link no header):
+  - Header com métricas resumo (cards):
+    "Total Gerado", "Gerado Hoje", "Cedentes Únicos"
+  - Tabela com colunas:
+    Data | Hora | Cedente | Processo | Documentos | Operador
+  - Filtro por data (de/até) e busca por nome do cedente
+  - Exportar tabela como CSV (botão)
+  - Design igual ao restante do sistema (dark theme L4 Ativos)
+  - Acesso protegido por senha simples (prompt no browser):
+    Senha: "l4admin2026"
+    Se errar, redirecionar para /index.html
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+PARTE 5 — GUIA DE USO PARA A EQUIPE
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Criar página /guia.html (link no header como "📖 Guia"):
+  - Seção "Como gerar documentos" (passo a passo numerado)
+  - Seção "Campos obrigatórios" (tabela com campo + onde aparece nos docs)
+  - Seção "Campos pré-preenchidos" (o que já vem preenchido e pode ser alterado)
+  - Seção "Perguntas frequentes":
+    * "O que fazer se o ZIP não baixar?"
+    * "Como alterar os advogados padrão?"
+    * "Onde ver histórico de documentos gerados?"
+    * "Campos de valor por extenso: como preencher?"
+  - Design simples, legível, dark theme
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+PARTE 6 — MELHORIAS VISUAIS NO FRONTEND
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Melhorar o design SEM quebrar funcionalidades:
+  - Adicionar ícones nas seções do formulário (📋 Cedente, 🏦 Banco, ⚖️ Processo, etc.)
+  - Feedback visual ao gerar: botão com loading spinner + mensagem "Gerando documentos..."
+  - Toast de sucesso ao baixar o ZIP: "✅ 4 documentos gerados com sucesso!"
+  - Toast de erro com mensagem específica se falhar
+  - Campos obrigatórios com borda vermelha se tentar enviar vazio
+  - Header com navegação: links para "Gerador" | "Histórico" | "Guia"
+  - Footer com versão e nome da empresa
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+PARTE 7 — COMMIT FINAL
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Após tudo funcionar e testado:
+1) Rodar a aplicação e confirmar que gera os 4 docs sem campos [vazios] ou {{...}} restantes
+2) Confirmar que /curadoria.html carrega e registra histórico
+3) Fazer commit e push para o GitHub com a mensagem:
+   "feat: corrige templates, adiciona cessionario editavel, curadoria,
+   guia equipe e melhorias de UX"
+
+IMPORTANTE:
+- Não remover nenhuma funcionalidade existente
+- Testar com dados reais antes do commit
+- Se algum template falhar na geração, mostrar qual campo está causando erro

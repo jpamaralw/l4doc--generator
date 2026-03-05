@@ -1,75 +1,97 @@
 import os
 from docx import Document
 
-def replace_text_in_paragraph(paragraph, old_text, new_text, occurrence=None, state={"count": 0}):
+def replace_text_in_paragraph(paragraph, old_text, new_text):
     if old_text not in paragraph.text:
         return False
-    
-    # We need to handle occurrences across the whole document for some tags
-    # but since we process paragraph by paragraph, we'll use a global-ish state
-    
-    # Simple replacement if no specific occurrence is needed
-    if occurrence is None:
-        for run in paragraph.runs:
-            if old_text in run.text:
-                run.text = run.text.replace(old_text, new_text)
-        return True
-    
-    # Handle specific occurrence
-    # This is tricky because one [Tag] might be split across multiple runs
-    # However, usually docxtpl placeholders are kept together or we assume simple case
-    full_text = "".join(run.text for run in paragraph.runs)
-    if old_text in full_text:
-        # Check how many times it appeared before
-        # For simplicity in this script, we'll do a basic version:
-        # If the run contains the text, we check our global count
-        for run in paragraph.runs:
-            if old_text in run.text:
-                state["count"] += 1
-                if state["count"] == occurrence:
-                    run.text = run.text.replace(old_text, new_text)
-                    return True
-    return False
+    for run in paragraph.runs:
+        if old_text in run.text:
+            run.text = run.text.replace(old_text, new_text)
+    return True
 
-def fix_ciencia_concord(doc):
-    # Mapping for template-dec-ciencia-concord.docx
-    # Note: filenames were renamed in previous turns
-    state_nome = {"count": 0}
-    state_nacionalidade = {"count": 0}
-    state_profissao = {"count": 0}
-    state_estado_civil = {"count": 0}
-    state_rg = {"count": 0}
-    state_cpf = {"count": 0}
-    state_data = {"count": 0}
-    state_endereco = {"count": 0}
-    state_cep = {"count": 0}
-    state_valor = {"count": 0}
-
+def fix_cessao(doc):
     for p in doc.paragraphs:
-        # CEDENTE
-        replace_text_in_paragraph(p, "[Nome]", "{{nome_cedente}}", 1, state_nome)
-        replace_text_in_paragraph(p, "[nacionalidade]", "{{nacionalidade_cedente}}", 1, state_nacionalidade)
-        replace_text_in_paragraph(p, "[Profissão]", "{{profissao_cedente}}", 1, state_profissao)
-        replace_text_in_paragraph(p, "[Estado Civil]", "{{estado_civil_cedente}}", 1, state_estado_civil)
-        replace_text_in_paragraph(p, "[RG]", "{{rg_cedente}}", 1, state_rg)
-        replace_text_in_paragraph(p, "[CPF]", "{{cpf_cedente}}", 1, state_cpf)
-        replace_text_in_paragraph(p, "[Data]", "{{data_nascimento}}", 1, state_data)
-        replace_text_in_paragraph(p, "[Endereço]", "{{endereco_cedente}}", 1, state_endereco)
-        replace_text_in_paragraph(p, "[CEP]", "{{cep_cedente}}", 1, state_cep)
+        replace_text_in_paragraph(p, "Devedor: Devedor:", "Devedor:")
         
-        # CESSIONÁRIO
-        replace_text_in_paragraph(p, "[Nome]", "{{nome_cessionario}}", 2, state_nome)
-        replace_text_in_paragraph(p, "[Profissão]", "{{profissao_cessionario}}", 2, state_profissao)
-        replace_text_in_paragraph(p, "[Estado Civil]", "{{estado_civil_cessionario}}", 2, state_estado_civil)
-        replace_text_in_paragraph(p, "[CPF]", "{{cpf_cessionario}}", 2, state_cpf)
-        replace_text_in_paragraph(p, "[RG]", "{{rg_cessionario}}", 2, state_rg)
-        replace_text_in_paragraph(p, "[Endereço]", "{{endereco_cessionario}}", 2, state_endereco)
-        replace_text_in_paragraph(p, "[CEP]", "{{cep_cessionario}}", 2, state_cep)
+        old_cessionario = "LEDA MARIA SOARES JANOT, brasileira, advogada, casada, portadora do CPF: 021.159.805-49 e RG nº 483293 SSP BA, residente a SMPW Q8 conjunto 3, casa 1, Park way, Brasília/DF, CEP: 71740-803"
+        new_cessionario = "{{nome_cessionario}}, {{nacionalidade_cessionario}}, {{profissao_cessionario}}, {{estado_civil_cessionario}}, portadora do CPF: {{cpf_cessionario}} e RG nº {{rg_cessionario}}, residente a {{endereco_cessionario}}, CEP: {{cep_cessionario}}"
+        replace_text_in_paragraph(p, old_cessionario, new_cessionario)
+        
+        replace_text_in_paragraph(p, "5314729-14.2025.8.09.0051", "{{numero_processo}}")
+    
+    # Check tables for PIX
+    for table in doc.tables:
+        for row in table.rows:
+            for cell in row.cells:
+                if "PIX" in cell.text and "{{" not in cell.text:
+                    for p in cell.paragraphs:
+                        p.add_run(" {{pix}}")
 
-        # Unique
+def fix_procuracao(doc):
+    replacements = {
+        "[Nome]": "{{nome_cedente}}",
+        "[Nacionalidade]": "{{nacionalidade_cedente}}",
+        "[Estado Civil]": "{{estado_civil_cedente}}",
+        "[Profissão]": "{{profissao_cedente}}",
+        "[RG]": "{{rg_cedente}}",
+        "[CPF]": "{{cpf_cedente}}",
+        "[Data Nasc]": "{{data_nascimento}}",
+        "[Endereço]": "{{endereco_cedente}}",
+        "[CEP]": "{{cep_cedente}}",
+        "DR. FÁBIO BATISTA BASTOS": "{{outorgado_nome_1}}",
+        "brasileiro, solteiro, advogado": "{{outorgado_nacionalidade_1}}, {{outorgado_estado_civil_1}}, {{outorgado_profissao_1}}",
+        "sob o nº 40.115": "sob o nº {{outorgado_oab_1}}",
+        "DRA. NATANE ALINE DE CARVALHO MONTEIRO": "{{outorgado_nome_2}}",
+        "brasileira, advogada": "{{outorgado_nacionalidade_2}}, {{outorgado_profissao_2}}",
+        "OAB/DF nº 63.726": "OAB/DF nº {{outorgado_oab_2}}",
+        "CPF n°115.617.116-40": "CPF nº {{outorgado_cpf_2}}",
+        "[Número Processo]": "{{numero_processo}}",
+        "[Data]": "{{data_contrato}}"
+    }
+    for p in doc.paragraphs:
+        for old, new in replacements.items():
+            replace_text_in_paragraph(p, old, new)
+
+def fix_ciencia(doc):
+    # This needs count-based replacement for some fields
+    nome_count = 0
+    profissao_count = 0
+    estado_civil_count = 0
+    rg_count = 0
+    cpf_count = 0
+    endereco_count = 0
+    cep_count = 0
+    valor_count = 0
+    
+    for p in doc.paragraphs:
+        if "[Nome]" in p.text:
+            nome_count += 1
+            replace_text_in_paragraph(p, "[Nome]", "{{nome_cedente}}" if nome_count == 1 else "{{nome_cessionario}}")
+        if "[Profissão]" in p.text:
+            profissao_count += 1
+            replace_text_in_paragraph(p, "[Profissão]", "{{profissao_cedente}}" if profissao_count == 1 else "{{profissao_cessionario}}")
+        if "[Estado Civil]" in p.text:
+            estado_civil_count += 1
+            replace_text_in_paragraph(p, "[Estado Civil]", "{{estado_civil_cedente}}" if estado_civil_count == 1 else "{{estado_civil_cessionario}}")
+        if "[RG]" in p.text:
+            rg_count += 1
+            replace_text_in_paragraph(p, "[RG]", "{{rg_cedente}}" if rg_count == 1 else "{{rg_cessionario}}")
+        if "[CPF]" in p.text:
+            cpf_count += 1
+            replace_text_in_paragraph(p, "[CPF]", "{{cpf_cedente}}" if cpf_count == 1 else "{{cpf_cessionario}}")
+        if "[Endereço]" in p.text:
+            endereco_count += 1
+            replace_text_in_paragraph(p, "[Endereço]", "{{endereco_cedente}}" if endereco_count == 1 else "{{endereco_cessionario}}")
+        if "[CEP]" in p.text:
+            cep_count += 1
+            replace_text_in_paragraph(p, "[CEP]", "{{cep_cedente}}" if cep_count == 1 else "{{cep_cessionario}}")
+        if "[Valor]" in p.text:
+            valor_count += 1
+            replace_text_in_paragraph(p, "[Valor]", "{{valor_bruto}}" if valor_count == 1 else "{{valor_liquido}}")
+            
+        replace_text_in_paragraph(p, "[nacionalidade]", "{{nacionalidade_cedente}}")
+        replace_text_in_paragraph(p, "[Data]", "{{data_nascimento}}") # Simplified for now
         replace_text_in_paragraph(p, "[Número]", "{{numero_processo}}")
-        replace_text_in_paragraph(p, "[Valor]", "{{valor_bruto}}", 1, state_valor)
-        replace_text_in_paragraph(p, "[Valor]", "{{valor_liquido}}", 2, state_valor)
         replace_text_in_paragraph(p, "[Nome Advogado]", "{{nome_advogado}}")
         replace_text_in_paragraph(p, "[Agência]", "{{agencia}}")
         replace_text_in_paragraph(p, "[Conta]", "{{conta}}")
@@ -77,71 +99,36 @@ def fix_ciencia_concord(doc):
         replace_text_in_paragraph(p, "[Nome Cedente]", "{{nome_cedente}}")
 
 def fix_quitacao(doc):
-    state_nome = {"count": 0}
-    state_data = {"count": 0}
+    nome_count = 0
     for p in doc.paragraphs:
-        replace_text_in_paragraph(p, "[Nome]", "{{nome_cedente}}", 1, state_nome)
-        replace_text_in_paragraph(p, "[Nacionalidade]", "{{nacionalidade_cedente}}")
-        replace_text_in_paragraph(p, "[Estado Civil]", "{{estado_civil_cedente}}")
-        replace_text_in_paragraph(p, "[Profissão]", "{{profissao_cedente}}")
-        replace_text_in_paragraph(p, "[RG]", "{{rg_cedente}}")
-        replace_text_in_paragraph(p, "[CPF]", "{{cpf_cedente}}")
-        replace_text_in_paragraph(p, "[Data]", "{{data_nascimento}}", 1, state_data)
-        replace_text_in_paragraph(p, "[Endereço]", "{{endereco_cedente}}")
-        replace_text_in_paragraph(p, "[CEP]", "{{cep_cedente}}")
-        replace_text_in_paragraph(p, "[DD/MM/AAAA]", "{{data_negociacao}}")
-        replace_text_in_paragraph(p, "[Número Processo]", "{{numero_processo}}")
-        replace_text_in_paragraph(p, "[Vara/Unidade]", "{{vara_unidade}}")
-        replace_text_in_paragraph(p, "[Comarca]", "{{comarca}}")
-        replace_text_in_paragraph(p, "[Nome]", "{{nome_cedente}}", 2, state_nome)
-        replace_text_in_paragraph(p, "[Número Processo Origem]", "{{numero_processo_origem}}")
-        replace_text_in_paragraph(p, "[Local]", "{{local}}")
-        replace_text_in_paragraph(p, "[Data]", "{{data_contrato}}", 2, state_data)
-
-def fix_procuracao(doc):
-    state_cpf = {"count": 0}
-    state_data = {"count": 0}
-    state_nome = {"count": 0}
-    for p in doc.paragraphs:
-        replace_text_in_paragraph(p, "[Nome]", "{{nome_cedente}}", 1, state_nome)
-        replace_text_in_paragraph(p, "[Nacionalidade]", "{{nacionalidade_cedente}}")
-        replace_text_in_paragraph(p, "[Estado Civil]", "{{estado_civil_cedente}}")
-        replace_text_in_paragraph(p, "[Profissão]", "{{profissao_cedente}}")
-        replace_text_in_paragraph(p, "[RG]", "{{rg_cedente}}")
-        replace_text_in_paragraph(p, "[CPF]", "{{cpf_cedente}}", 1, state_cpf)
-        replace_text_in_paragraph(p, "[Data Nasc]", "{{data_nascimento}}")
-        replace_text_in_paragraph(p, "[Endereço]", "{{endereco_cedente}}")
-        replace_text_in_paragraph(p, "[CEP]", "{{cep_cedente}}")
+        if "[Nome]" in p.text:
+            nome_count += 1
+            replace_text_in_paragraph(p, "[Nome]", "{{nome_cedente}}")
         
-        # Hardcoded Outorgado
-        replace_text_in_paragraph(p, "DR. FÁBIO BATISTA BASTOS", "{{outorgado_nome_1}}")
-        replace_text_in_paragraph(p, "brasileiro, solteiro, advogado", "{{outorgado_nacionalidade_1}}, {{outorgado_estado_civil_1}}, {{outorgado_profissao_1}}")
-        replace_text_in_paragraph(p, "sob o nº 40.115", "sob o nº {{outorgado_oab_1}}")
-        replace_text_in_paragraph(p, "DRA. NATANE ALINE DE CARVALHO MONTEIRO", "{{outorgado_nome_2}}")
-        replace_text_in_paragraph(p, "brasileira, advogada", "{{outorgado_nacionalidade_2}}, {{outorgado_profissao_2}}")
-        replace_text_in_paragraph(p, "OAB/DF nº 63.726", "OAB/DF nº {{outorgado_oab_2}}")
-        replace_text_in_paragraph(p, "CPF n°115.617.116-40", "CPF nº {{outorgado_cpf_2}}")
-        
-        replace_text_in_paragraph(p, "[Número Processo]", "{{numero_processo}}")
-        replace_text_in_paragraph(p, "[Data]", "{{data_contrato}}", 2, state_data)
-        replace_text_in_paragraph(p, "[Nome]", "{{nome_cedente}}", 2, state_nome)
-        replace_text_in_paragraph(p, "[CPF]", "{{cpf_cedente}}", 2, state_cpf)
-
-def fix_cessao(doc):
-    old_block = "LEDA MARIA SOARES JANOT, brasileira, advogada, casada, portadora do CPF: 021.159.805-49 e RG nº 483293 SSP BA, residente a SMPW Q8 conjunto 3, casa 1, Park way, Brasília/DF, CEP: 71740-803"
-    new_block = "{{nome_cessionario}}, {{nacionalidade_cessionario}}, {{profissao_cessionario}}, {{estado_civil_cessionario}}, portadora do CPF: {{cpf_cessionario}} e RG nº {{rg_cessionario}}, residente a {{endereco_cessionario}}, CEP: {{cep_cessionario}}"
-    
-    for p in doc.paragraphs:
-        if old_block in p.text:
-            replace_text_in_paragraph(p, old_block, new_block)
-        replace_text_in_paragraph(p, "5314729-14.2025.8.09.0051", "{{numero_processo}}")
-        replace_text_in_paragraph(p, "Devedor: Devedor:", "Devedor:")
+        replacements = {
+            "[Nacionalidade]": "{{nacionalidade_cedente}}",
+            "[Estado Civil]": "{{estado_civil_cedente}}",
+            "[Profissão]": "{{profissao_cedente}}",
+            "[RG]": "{{rg_cedente}}",
+            "[CPF]": "{{cpf_cedente}}",
+            "[Data]": "{{data_nascimento}}",
+            "[Endereço]": "{{endereco_cedente}}",
+            "[CEP]": "{{cep_cedente}}",
+            "[DD/MM/AAAA]": "{{data_negociacao}}",
+            "[Número Processo]": "{{numero_processo}}",
+            "[Vara/Unidade]": "{{vara_unidade}}",
+            "[Comarca]": "{{comarca}}",
+            "[Número Processo Origem]": "{{numero_processo_origem}}",
+            "[Local]": "{{local}}"
+        }
+        for old, new in replacements.items():
+            replace_text_in_paragraph(p, old, new)
 
 templates = {
-    "templates/template-dec-ciencia-concord.docx": fix_ciencia_concord,
-    "templates/template-dec-quitacao.docx": fix_quitacao,
+    "templates/template-cessao-rpv.docx": fix_cessao,
     "templates/template-procuracao-adjudicia.docx": fix_procuracao,
-    "templates/template-cessao-rpv.docx": fix_cessao
+    "templates/template-dec-ciencia-concord.docx": fix_ciencia,
+    "templates/template-dec-quitacao.docx": fix_quitacao
 }
 
 for path, func in templates.items():
@@ -149,21 +136,12 @@ for path, func in templates.items():
         doc = Document(path)
         func(doc)
         doc.save(path)
-        print(f"Saved: {path}")
-    else:
-        print(f"Not found: {path}")
+        print(f"Fixed {path}")
 
-# Verification
+# Scan for remaining brackets
 for path in templates.keys():
     if os.path.exists(path):
         doc = Document(path)
-        found = []
-        for p in doc.paragraphs:
+        for i, p in enumerate(doc.paragraphs):
             if "[" in p.text or "]" in p.text:
-                found.append(p.text)
-        if found:
-            print(f"Found remaining brackets in {path}:")
-            for text in found:
-                print(f"  - {text}")
-        else:
-            print(f"No brackets found in {path}")
+                print(f"Remaining bracket in {path} par {i}: {p.text}")
