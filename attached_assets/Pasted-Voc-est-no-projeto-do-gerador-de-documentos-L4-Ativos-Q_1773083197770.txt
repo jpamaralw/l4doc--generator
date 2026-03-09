@@ -1,0 +1,77 @@
+Você está no projeto do gerador de documentos L4 Ativos.
+Quero 2 coisas: (1) corrigir o template de cessão antigo, (2) garantir deploy atualizado no Render + Netlify.
+
+━━━━━━━━━━━━━━━━━━━━━━
+PARTE 1 — CONTRATO DE CESSÃO ANTIGO
+━━━━━━━━━━━━━━━━━━━━━━
+Arquivo a ajustar: templates/template-cessao-rpv.docx
+
+Use python-docx em um script TEMPORÁRIO fix_cessao_template.py (apague depois).
+REGRA: preservar formatação (negrito, sublinhado etc.), só alterar o texto dos runs.
+
+1) Bloco do CESSIONÁRIO
+Localize o parágrafo que hoje está assim (ou bem parecido):
+
+"CESSIONÁRIO: LEDA MARIA SOARES JANOT, brasileira, advogada, casada,
+portadora do CPF: 021.159.805-49 e RG nº 483293 SSP BA, residente a
+SMPW Q8 conjunto 3, casa 1, Park way, Brasília/DF, CEP: 71740-803
+doravante denominado como (“Cessionário”)."
+
+Substitua TODO esse trecho por:
+
+"CESSIONÁRIO: {{nome_cessionario}}, {{nacionalidade_cessionario}},
+{{profissao_cessionario}}, {{estado_civil_cessionario}}, portador(a) do
+CPF: {{cpf_cessionario}}, RG nº {{rg_cessionario}}, residente à
+{{endereco_cessionario}}, CEP: {{cep_cessionario}} doravante denominado
+como (\"Cessionário\")."
+
+2) Assinaturas finais
+No rodapé do contrato, onde aparecem as linhas de assinatura de
+CEDENTE e CESSIONÁRIO, garanta o seguinte:
+
+- Linha do Cedente: o nome exibido deve ser {{nome_cedente}}
+- Linha do Cessionário: o nome exibido deve ser {{nome_cessionario}}
+
+Se ainda houver qualquer nome hardcoded (ex.: “YAGO SALES FERREIRA GONCALVES”
+ou “LEDA MARIA SOARES JANOT”), troque pelos placeholders corretos
+{{nome_cedente}} ou {{nome_cessionario}} conforme o caso.
+
+3) Verificação
+Depois de salvar o template:
+- Gere um contrato de cessão usando dados de teste onde o cessionário NÃO é a Leda.
+- Confirme que:
+  - No cabeçalho “CESSIONÁRIO:” aparece o nome do cessionário passado pelo formulário.
+  - Nas assinaturas finais aparecem os nomes corretos de Cedente e Cessionário.
+Se estiver tudo certo, delete o fix_cessao_template.py.
+
+━━━━━━━━━━━━━━━━━━━━━━
+PARTE 2 — DEPLOY RENDER + NETLIFY
+━━━━━━━━━━━━━━━━━━━━━━
+O backend está hospedado no Render e o frontend no Netlify
+(URL atual: https://l4-ativos-docs.netlify.app).
+
+1) Git
+- Faça git add/commit/push com TODAS as alterações atuais do Repl
+  para o repositório GitHub conectado.
+
+2) Render (backend FastAPI)
+- Confirme que o Render está apontando para a MESMA branch atualizada.
+- Se o serviço não fizer redeploy automático via webhook, force um deploy
+  manual via painel ou comando equivalente.
+- Após o deploy, teste a rota de geração de documentos diretamente na URL
+  pública do backend para confirmar que está usando o template corrigido.
+
+3) Netlify (frontend)
+- Confirme que o Netlify está conectado ao mesmo repositório/branch
+  e rode um novo build (trigger de deploy).
+- Após o deploy, acesse https://l4-ativos-docs.netlify.app,
+  preencha com dados de teste e gere um contrato de cessão.
+- Confirme:
+  - Cessionário exibindo os dados corretos (não mais a Leda).
+  - Assinaturas finais com Cedente e Cessionário corretos.
+
+No final, me responda com um resumo curto:
+- Confirmação do trecho exato do CESSIONÁRIO após a troca.
+- Print/descrição do rodapé com os placeholders corretos.
+- Confirmação de que Render e Netlify estão rodando com o código/templated
+  atualizado.
