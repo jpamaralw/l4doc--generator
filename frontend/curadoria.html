@@ -32,6 +32,10 @@
     .btn-primary:hover{transform:translateY(-1px);box-shadow:0 4px 12px rgba(59,130,246,.4)}
     .btn-secondary{background:#1e3a5f;color:#94a3b8}
     .btn-secondary:hover{background:#243b59;color:#e2e8f0}
+    .btn-type{background:#0f1f35;border:1px solid #1e3a5f;color:#64748b;padding:.35rem .9rem;border-radius:6px;font-size:.82rem;font-weight:600;cursor:pointer;transition:all .2s}
+    .btn-type.active{border-color:#3b82f6;color:#60a5fa;background:rgba(59,130,246,.1)}
+    .type-filters{display:flex;gap:.5rem;align-items:center}
+    .type-filters-label{font-size:.8rem;color:#64748b;margin-right:.25rem}
     table{width:100%;border-collapse:collapse;font-size:.88rem}
     th{text-align:left;padding:.7rem 1rem;color:#64748b;font-weight:600;border-bottom:1px solid #1e3a5f;white-space:nowrap}
     td{padding:.7rem 1rem;border-bottom:1px solid #0f1f35;color:#e2e8f0;vertical-align:middle}
@@ -41,6 +45,10 @@
     .badge-branded{background:rgba(59,130,246,.2);color:#60a5fa}
     .empty{text-align:center;color:#64748b;padding:3rem;font-size:.95rem}
     .page-title{font-size:1.5rem;font-weight:700;color:#e2e8f0;margin-bottom:1.5rem}
+    @media(max-width:600px){
+      .filters{flex-direction:column;align-items:stretch}
+      .stats-grid{grid-template-columns:1fr 1fr}
+    }
   </style>
 </head>
 <body>
@@ -81,6 +89,16 @@
         <label>Buscar cedente</label>
         <input type="text" id="filtBusca" placeholder="Nome do cedente...">
       </div>
+      <div class="filter-group" style="justify-content:flex-end">
+        <label>Tipo de Template</label>
+        <div class="type-filters">
+          <button class="btn-type active" id="typeTodos" onclick="setTypeFilter('todos')">Todos</button>
+          <button class="btn-type" id="typePadrao" onclick="setTypeFilter('padrao')">Padrão</button>
+          <button class="btn-type" id="typeBranded" onclick="setTypeFilter('branded')">L4 Ativos</button>
+        </div>
+      </div>
+    </div>
+    <div class="filters" style="margin-top:-.6rem">
       <button class="btn btn-primary" onclick="applyFilter()">🔍 Filtrar</button>
       <button class="btn btn-secondary" onclick="clearFilter()">✕ Limpar</button>
       <button class="btn btn-secondary" onclick="exportCSV()">📥 Exportar CSV</button>
@@ -111,25 +129,30 @@
 </footer>
 
 <script>
-  const SENHA = "l4admin2026";
+  const CURADORIA_PASSWORD = "l4admin2026";
+
+  const API_URL = window.location.hostname === "localhost" || window.location.hostname === "127.0.0.1"
+    ? "http://127.0.0.1:5000"
+    : "https://l4doc-api.onrender.com";
 
   (function checkAuth() {
     const stored = sessionStorage.getItem("l4_auth");
-    if (stored === SENHA) return;
+    if (stored === CURADORIA_PASSWORD) return;
     const input = prompt("🔒 Acesso restrito. Digite a senha:");
-    if (input === SENHA) {
-      sessionStorage.setItem("l4_auth", SENHA);
+    if (input === CURADORIA_PASSWORD) {
+      sessionStorage.setItem("l4_auth", CURADORIA_PASSWORD);
     } else {
-      alert("Senha incorreta. Redirecionando...");
+      alert("Senha incorreta. Fale com a equipe L4 Ativos para obter acesso.");
       window.location.href = "/";
     }
   })();
 
   let allRows = [];
+  let activeTypeFilter = "todos";
 
   async function loadStats() {
     try {
-      const res = await fetch("/api/historico/stats");
+      const res = await fetch(`${API_URL}/api/historico/stats`);
       const s = await res.json();
       document.getElementById("statTotal").textContent = s.total ?? 0;
       document.getElementById("statHoje").textContent = s.hoje ?? 0;
@@ -139,7 +162,7 @@
 
   async function loadHistorico() {
     try {
-      const res = await fetch("/api/historico");
+      const res = await fetch(`${API_URL}/api/historico`);
       allRows = await res.json();
       renderTable(allRows);
     } catch {
@@ -157,7 +180,7 @@
       const date = r.data_geracao ? r.data_geracao.split("T")[0].split("-").reverse().join("/") : "–";
       const hora = r.hora_geracao || "–";
       const badge = r.template_type === "branded"
-        ? '<span class="badge badge-branded">L4 Branded</span>'
+        ? '<span class="badge badge-branded">L4 Ativos</span>'
         : '<span class="badge badge-padrao">Padrão</span>';
       return `<tr>
         <td>${date}</td>
@@ -170,7 +193,15 @@
     }).join("");
   }
 
-  function applyFilter() {
+  function setTypeFilter(type) {
+    activeTypeFilter = type;
+    document.getElementById("typeTodos").classList.toggle("active", type === "todos");
+    document.getElementById("typePadrao").classList.toggle("active", type === "padrao");
+    document.getElementById("typeBranded").classList.toggle("active", type === "branded");
+    applyFilter();
+  }
+
+  function getFilteredRows() {
     const de = document.getElementById("filtDe").value;
     const ate = document.getElementById("filtAte").value;
     const busca = document.getElementById("filtBusca").value.toLowerCase();
@@ -178,29 +209,32 @@
     if (de) filtered = filtered.filter(r => r.data_geracao && r.data_geracao >= de);
     if (ate) filtered = filtered.filter(r => r.data_geracao && r.data_geracao.split("T")[0] <= ate);
     if (busca) filtered = filtered.filter(r => (r.cedente_nome || "").toLowerCase().includes(busca));
-    renderTable(filtered);
+    if (activeTypeFilter !== "todos") filtered = filtered.filter(r => r.template_type === activeTypeFilter);
+    return filtered;
+  }
+
+  function applyFilter() {
+    renderTable(getFilteredRows());
   }
 
   function clearFilter() {
     document.getElementById("filtDe").value = "";
     document.getElementById("filtAte").value = "";
     document.getElementById("filtBusca").value = "";
+    activeTypeFilter = "todos";
+    document.getElementById("typeTodos").classList.add("active");
+    document.getElementById("typePadrao").classList.remove("active");
+    document.getElementById("typeBranded").classList.remove("active");
     renderTable(allRows);
   }
 
   function exportCSV() {
-    const de = document.getElementById("filtDe").value;
-    const ate = document.getElementById("filtAte").value;
-    const busca = document.getElementById("filtBusca").value.toLowerCase();
-    let rows = allRows;
-    if (de) rows = rows.filter(r => r.data_geracao && r.data_geracao >= de);
-    if (ate) rows = rows.filter(r => r.data_geracao && r.data_geracao.split("T")[0] <= ate);
-    if (busca) rows = rows.filter(r => (r.cedente_nome || "").toLowerCase().includes(busca));
-
-    const headers = ["Data","Hora","Cedente","Processo","Template","Operador"];
+    const rows = getFilteredRows();
+    const headers = ["Data","Hora","Cedente","Processo","Tipo de Template","Operador"];
     const csvRows = rows.map(r => {
       const date = r.data_geracao ? r.data_geracao.split("T")[0].split("-").reverse().join("/") : "";
-      return [date, r.hora_geracao||"", r.cedente_nome||"", r.numero_processo||"", r.template_type||"", r.usuario||""].map(v => `"${v}"`).join(",");
+      const tipo = r.template_type === "branded" ? "L4 Ativos" : "Padrão";
+      return [date, r.hora_geracao||"", r.cedente_nome||"", r.numero_processo||"", tipo, r.usuario||""].map(v => `"${v}"`).join(",");
     });
     const csv = [headers.join(","), ...csvRows].join("\n");
     const blob = new Blob(["\uFEFF"+csv], {type:"text/csv;charset=utf-8;"});

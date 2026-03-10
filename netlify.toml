@@ -1,0 +1,9 @@
+[build]
+  publish = "frontend"
+  command = "npm run build || echo 'no build step'"
+
+[[redirects]]
+  from = "/api/*"
+  to = "https://l4doc-api.onrender.com/api/:splat"
+  status = 200
+  force = true

@@ -1,4 +1,6 @@
-const API_URL = "";
+const API_URL = window.location.hostname === "localhost" || window.location.hostname === "127.0.0.1"
+  ? "http://127.0.0.1:5000"
+  : "https://l4doc-api.onrender.com";
 
 function showToast(msg, type = "success") {
   const t = document.getElementById("toast");
@@ -41,10 +43,12 @@ function resetLawyers() {
 function updateTemplateOpt() {
   const padrao = document.getElementById("opt_padrao");
   const branded = document.getElementById("opt_branded");
+  const brandedNotice = document.getElementById("branded_notice");
   if (!padrao || !branded) return;
   const val = document.querySelector('input[name="template_type"]:checked')?.value;
   padrao.classList.toggle("selected", val === "padrao");
   branded.classList.toggle("selected", val === "branded");
+  if (brandedNotice) brandedNotice.style.display = val === "branded" ? "block" : "none";
 }
 
 function calcLiquido() {
@@ -67,6 +71,19 @@ function maskCEP(el) {
   let v = el.value.replace(/\D/g, "").substring(0, 8);
   v = v.replace(/(\d{5})(\d)/, "$1-$2");
   el.value = v;
+}
+
+function isValidCPF(val) {
+  return /^\d{3}\.\d{3}\.\d{3}-\d{2}$/.test(val);
+}
+
+function isValidCEP(val) {
+  return /^\d{5}-\d{3}$/.test(val);
+}
+
+function showFieldError(el, msg) {
+  el.classList.add("invalid");
+  el.title = msg;
 }
 
 function getFormData() {
@@ -92,15 +109,61 @@ function validateForm(data) {
     "local","data_contrato","data_negociacao"
   ];
   let valid = true;
-  // Clear previous invalid states
-  document.querySelectorAll(".invalid").forEach(el => el.classList.remove("invalid"));
+  document.querySelectorAll(".invalid").forEach(el => {
+    el.classList.remove("invalid");
+    el.title = "";
+  });
+
   required.forEach(name => {
     const el = document.getElementById(name);
     if (el && !el.value.trim()) {
-      el.classList.add("invalid");
+      showFieldError(el, "Campo obrigatório");
       valid = false;
     }
   });
+
+  const cpfCedente = document.getElementById("cpf_cedente");
+  if (cpfCedente && cpfCedente.value && !isValidCPF(cpfCedente.value)) {
+    showFieldError(cpfCedente, "CPF inválido — use o formato 000.000.000-00");
+    valid = false;
+  }
+
+  const cpfCessionario = document.getElementById("cpf_cessionario");
+  if (cpfCessionario && cpfCessionario.value && !isValidCPF(cpfCessionario.value)) {
+    showFieldError(cpfCessionario, "CPF inválido — use o formato 000.000.000-00");
+    valid = false;
+  }
+
+  const cepCedente = document.getElementById("cep_cedente");
+  if (cepCedente && cepCedente.value && !isValidCEP(cepCedente.value)) {
+    showFieldError(cepCedente, "CEP inválido — use o formato 00000-000");
+    valid = false;
+  }
+
+  const cepCessionario = document.getElementById("cep_cessionario");
+  if (cepCessionario && cepCessionario.value && !isValidCEP(cepCessionario.value)) {
+    showFieldError(cepCessionario, "CEP inválido — use o formato 00000-000");
+    valid = false;
+  }
+
+  const proc = document.getElementById("numero_processo");
+  if (proc && proc.value && !/^\d{7}-\d{2}\.\d{4}\.\d\.\d{2}\.\d{4}$/.test(proc.value)) {
+    showFieldError(proc, "Formato esperado: 0000000-00.0000.0.00.0000");
+    valid = false;
+  }
+
+  const vb = document.getElementById("valor_bruto");
+  if (vb && (isNaN(parseFloat(vb.value)) || parseFloat(vb.value) <= 0)) {
+    showFieldError(vb, "Informe um valor bruto maior que zero");
+    valid = false;
+  }
+
+  const vl = document.getElementById("valor_liquido");
+  if (vl && (isNaN(parseFloat(vl.value)) || parseFloat(vl.value) <= 0)) {
+    showFieldError(vl, "Informe um valor líquido maior que zero");
+    valid = false;
+  }
+
   return valid;
 }
 
@@ -108,25 +171,21 @@ document.addEventListener("DOMContentLoaded", () => {
   resetLawyers();
   setDefaultDates();
 
-  // Mask CPF fields
   ["cpf_cedente","cpf_cessionario","outorgado_cpf_2"].forEach(id => {
     const el = document.getElementById(id);
     if (el) el.addEventListener("input", () => maskCPF(el));
   });
 
-  // Mask CEP fields
   ["cep_cedente","cep_cessionario"].forEach(id => {
     const el = document.getElementById(id);
     if (el) el.addEventListener("input", () => maskCEP(el));
   });
 
-  // Auto-calc liquido
   const vb = document.getElementById("valor_bruto");
   const pct = document.getElementById("percentual_honorarios");
   if (vb) vb.addEventListener("input", calcLiquido);
   if (pct) pct.addEventListener("input", calcLiquido);
 
-  // Form submit
   const form = document.getElementById("mainForm");
   if (form) {
     form.addEventListener("submit", async (e) => {
@@ -140,19 +199,16 @@ async function generateAll() {
   const data = getFormData();
 
   if (!validateForm(data)) {
-    showToast("❌ Preencha todos os campos obrigatórios!", "error");
-    // Scroll to first invalid
+    showToast("❌ Corrija os campos destacados em vermelho antes de continuar.", "error");
     const first = document.querySelector(".invalid");
     if (first) first.scrollIntoView({ behavior: "smooth", block: "center" });
     return;
   }
 
-  // Format dates
   data.data_nascimento = formatDate(data.data_nascimento);
   data.data_contrato = formatDate(data.data_contrato);
   data.data_negociacao = formatDate(data.data_negociacao);
 
-  // Numerics
   data.valor_bruto = parseFloat(data.valor_bruto) || 0;
   data.valor_liquido = parseFloat(data.valor_liquido) || 0;
   data.percentual_honorarios = parseFloat(data.percentual_honorarios) || 0;

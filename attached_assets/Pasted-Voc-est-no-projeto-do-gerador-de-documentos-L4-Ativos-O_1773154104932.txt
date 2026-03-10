@@ -1,0 +1,153 @@
+Você está no projeto do gerador de documentos L4 Ativos.
+
+Objetivo: 
+1) Ajustar o frontend para usar a API no Render (https://l4doc-api.onrender.com).
+2) Melhorar o que já existe (UX/Curadoria) com pequenos incrementos.
+3) Me informar claramente a senha da tela de histórico.
+4) Preparar os comandos git para eu rodar no Shell.
+
+━━━━━━━━━━━━━━━━━━━━━━
+PARTE 1 — API_URL PARA RENDER + NETLIFY
+━━━━━━━━━━━━━━━━━━━━━━
+
+1. Localize o arquivo JS que faz as requisições (provavelmente em `frontend/` ou no HTML principal).
+   - Procure por `fetch("/api/` ou `API_URL`.
+
+2. Crie uma constante global:
+   ```js
+   const API_URL = "https://l4doc-api.onrender.com";
+e troque todas as chamadas de:
+
+js
+fetch("/api/alguma-coisa" ...)
+para:
+
+js
+fetch(`${API_URL}/api/alguma-coisa` ...)
+inclusive:
+
+geração de todos documentos (ex.: /api/generate-all ou similar)
+
+qualquer endpoint de histórico, se houver consumo no front
+
+Certifique-se de que nos ambientes locais isso continua funcionando:
+
+Se você detectar que o código roda tanto local quanto em produção, pode usar:
+
+js
+const API_URL = window.location.hostname.includes("localhost")
+  ? "http://127.0.0.1:5000"
+  : "https://l4doc-api.onrender.com";
+Se isso for simples de aplicar, use essa abordagem; se não, use apenas a URL do Render.
+
+Crie um arquivo netlify.toml na raiz com:
+
+text
+[build]
+  publish = "frontend"
+  command = "npm run build || echo 'no build step'"
+
+[[redirects]]
+  from = "/api/*"
+  to = "https://l4doc-api.onrender.com/api/:splat"
+  status = 200
+  force = true
+OBS: se o front for estático puro (só HTML/JS), o comando de build pode ser ignorado; o importante é o publish = "frontend".
+
+Verifique se as rotas estáticas (/, /curadoria, /guia) continuam acessíveis no Netlify
+e que as chamadas de geração usam o domínio do Render.
+
+━━━━━━━━━━━━━━━━━━━━━━
+PARTE 2 — HISTÓRICO / CURADORIA
+━━━━━━━━━━━━━━━━━━━━━━
+
+CONFIRME e me retorne qual senha está atualmente codificada para acesso
+à tela de curadoria. Se não estiver claro, defina explicitamente:
+
+Senha: l4admin2026
+
+No frontend (curadoria.html + JS):
+
+Centralize essa senha em uma constante:
+
+js
+const CURADORIA_PASSWORD = "l4admin2026";
+Na lógica de prompt/validação, use essa constante.
+
+Se ainda não existir, exiba uma mensagem amigável em caso de erro:
+"Senha incorreta. Fale com a equipe L4 Ativos para obter acesso."
+
+Pequenas melhorias na Curadoria:
+
+Adicionar coluna "Tipo de Template" (padrão vs branded) na tabela, lendo o campo template_type da API.
+
+Adicionar filtro rápido por tipo de template (botões "Todos | Padrão | L4 Ativos").
+
+Se já houver exportação CSV, garanta que inclui as novas colunas; se não, implemente uma função JS simples para exportar os dados da tabela em CSV.
+
+━━━━━━━━━━━━━━━━━━━━━━
+PARTE 3 — MELHORIAS RÁPIDAS DE UX
+━━━━━━━━━━━━━━━━━━━━━━
+
+Na tela principal de geração:
+
+Quando o usuário seleciona "Template L4 Ativos (com logo)", exibir um badge ou texto discreto abaixo:
+"Os documentos serão gerados com o cabeçalho e rodapé oficiais da L4 Ativos."
+
+Adicionar um pequeno aviso abaixo do botão de gerar:
+"Os dados não ficam salvos no navegador; apenas o resumo entra no painel de curadoria."
+
+Validação:
+
+Certificar que:
+
+CPF, CEP e número do processo mostram mensagem clara se estiverem em formato inválido.
+
+Campos de valor em branco são marcados com borda vermelha e tooltip explicando o que falta.
+
+Responsividade:
+
+Ajustar, se necessário, para que em telas menores (tablet) as seções não quebrem de forma estranha.
+
+Se já estiver OK, apenas confirmar.
+
+━━━━━━━━━━━━━━━━━━━━━━
+PARTE 4 — COMANDOS GIT PARA EU RODAR NO SHELL
+━━━━━━━━━━━━━━━━━━━━━━
+
+Você não pode rodar git diretamente, mas eu posso.
+Então:
+
+Liste claramente, ao final, quais arquivos foram alterados
+(ex.: frontend/index.html, frontend/js/app.js, curadoria.html, netlify.toml etc.).
+
+Monte a sequência exata de comandos que eu devo rodar no Shell, por exemplo:
+
+bash
+git add <lista de arquivos>
+git commit -m "chore: point frontend to render api and refine curadoria"
+git push
+Confirme que, após o push, basta eu:
+
+Forçar redeploy no Render (se necessário).
+
+Forçar deploy no Netlify (ou só aguardar o build automático).
+
+E que, com isso, a aplicação hospedada em https://l4-ativos-docs.netlify.app
+já irá falar com o backend em https://l4doc-api.onrender.com.
+
+No final, traga um resumo curto:
+
+URL da API usada pelo frontend,
+
+senha final da curadoria,
+
+lista dos arquivos tocados,
+
+bloco com os comandos git prontos para eu colar no Shell.
+
+text
+
+***
+
+Quando ele terminar, cola aqui o resumo que o Replit te devolver para a gente validar antes do deploy final.
