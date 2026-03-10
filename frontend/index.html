@@ -55,6 +55,17 @@
     input[type=number] { -moz-appearance:textfield; }
     input[type=number]::-webkit-outer-spin-button,
     input[type=number]::-webkit-inner-spin-button { -webkit-appearance:none; }
+    @media (max-width: 768px) {
+      .header { flex-direction:column; align-items:flex-start; padding:1rem; gap:.6rem; }
+      .nav-links { flex-wrap:wrap; gap:.6rem; }
+      .container { padding:1rem; }
+      .card { padding:1.25rem; }
+      .form-grid { grid-template-columns:1fr; }
+      .form-group.full { grid-column:1; }
+      .template-toggle { flex-direction:column; }
+      .btn-group { flex-direction:column; }
+      .btn-group .btn { width:100%; justify-content:center; text-align:center; }
+    }
   </style>
 </head>
 <body style="background:#060f1e; min-height:100vh; font-family:'Inter',system-ui,sans-serif; color:#e2e8f0;">

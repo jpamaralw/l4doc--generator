@@ -45,9 +45,18 @@
     .badge-branded{background:rgba(59,130,246,.2);color:#60a5fa}
     .empty{text-align:center;color:#64748b;padding:3rem;font-size:.95rem}
     .page-title{font-size:1.5rem;font-weight:700;color:#e2e8f0;margin-bottom:1.5rem}
-    @media(max-width:600px){
-      .filters{flex-direction:column;align-items:stretch}
+    @media(max-width:768px){
+      header{flex-direction:column;align-items:flex-start;padding:1rem;gap:.6rem}
+      nav{display:flex;flex-wrap:wrap;gap:.4rem}
+      nav a{margin-left:0}
+      .container{padding:1rem}
       .stats-grid{grid-template-columns:1fr 1fr}
+      .filters{flex-direction:column;align-items:stretch}
+      .filter-group{width:100%}
+      .type-filters{flex-wrap:wrap}
+      .btn{width:100%;justify-content:center}
+      table{font-size:.8rem}
+      th,td{padding:.5rem .6rem}
     }
   </style>
 </head>

@@ -1,5 +1,16 @@
-﻿output/
+output/
 __pycache__/
 *.pyc
+*.pyo
 .DS_Store
 *.log
+.env
+l4docs.db
+*.zip
+generated_docs/
+.replit
+replit.nix
+.cache/
+.agents/
+.local/
+attached_assets/
